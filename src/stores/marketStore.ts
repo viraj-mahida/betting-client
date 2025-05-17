@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
-import { BN, web3 } from '@coral-xyz/anchor';
+import { BN, web3, AnchorProvider } from '@coral-xyz/anchor';
 import { getBettingProgram } from '../utils/anchor';
-import { useAnchorProvider } from '../contexts/WalletContext';
 
 // Types that align with the Anchor contract
 export type Outcome = 'Undecided' | 'Yes' | 'No';
@@ -43,13 +42,13 @@ interface MarketStore {
   bettingState: { authority: PublicKey; marketCount: BN } | null;
   isLoading: boolean;
   error: string | null;
-  fetchMarkets: () => Promise<void>;
-  fetchBettingState: () => Promise<void>;
+  fetchMarkets: (provider: AnchorProvider) => Promise<void>;
+  fetchBettingState: (provider: AnchorProvider) => Promise<void>;
   getMarketById: (id: string) => MarketWithUserPosition | undefined;
-  createMarket: (params: CreateMarketParams) => Promise<void>;
-  placeBet: (marketId: string, amount: number, outcome: 'Yes' | 'No') => Promise<void>;
-  resolveMarket: (marketId: string, outcome: 'Yes' | 'No') => Promise<void>;
-  claimWinnings: (marketId: string) => Promise<void>;
+  createMarket: (provider: AnchorProvider, params: CreateMarketParams) => Promise<void>;
+  placeBet: (provider: AnchorProvider, marketId: string, amount: number, outcome: 'Yes' | 'No') => Promise<void>;
+  resolveMarket: (provider: AnchorProvider, marketId: string, outcome: 'Yes' | 'No') => Promise<void>;
+  claimWinnings: (provider: AnchorProvider, marketId: string) => Promise<void>;
   userCreatedMarkets: (userAddress: string) => MarketWithUserPosition[];
   filteredMarkets: (status?: 'open' | 'resolved') => MarketWithUserPosition[];
 }
@@ -59,11 +58,10 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
   bettingState: null,
   isLoading: false,
   error: null,
-
-  fetchBettingState: async () => {
+  
+  fetchBettingState: async (provider: AnchorProvider) => {
     set({ isLoading: true, error: null });
     try {
-      const provider = useAnchorProvider();
       const program = getBettingProgram(provider);
       
       // Fetch the betting state account
@@ -91,10 +89,9 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     }
   },
 
-  fetchMarkets: async () => {
+  fetchMarkets: async (provider: AnchorProvider) => {
     set({ isLoading: true, error: null });
     try {
-      const provider = useAnchorProvider();
       const program = getBettingProgram(provider);
       
       // Fetch all market accounts
@@ -153,15 +150,14 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     return get().markets.find(market => market.id.toString() === id);
   },
 
-  createMarket: async (params: CreateMarketParams) => {
+  createMarket: async (provider: AnchorProvider, params: CreateMarketParams) => {
     set({ isLoading: true, error: null });
     try {
-      const provider = useAnchorProvider();
       const program = getBettingProgram(provider);
       
       // Get the betting state account
       if (!get().bettingState) {
-        await get().fetchBettingState();
+        await get().fetchBettingState(provider);
       }
       
       const bettingState = get().bettingState;
@@ -196,7 +192,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
         .rpc();
       
       // Refresh the markets list
-      await get().fetchMarkets();
+      await get().fetchMarkets(provider);
       
       set({ isLoading: false });
     } catch (error) {
@@ -208,10 +204,9 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     }
   },
 
-  placeBet: async (marketId: string, amount: number, outcome: 'Yes' | 'No') => {
+  placeBet: async (provider: AnchorProvider, marketId: string, amount: number, outcome: 'Yes' | 'No') => {
     set({ isLoading: true, error: null });
     try {
-      const provider = useAnchorProvider();
       const program = getBettingProgram(provider);
       
       const market = get().getMarketById(marketId);
@@ -234,7 +229,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
         .rpc();
       
       // Refresh the markets list
-      await get().fetchMarkets();
+      await get().fetchMarkets(provider);
       
       set({ isLoading: false });
     } catch (error) {
@@ -246,10 +241,9 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     }
   },
 
-  resolveMarket: async (marketId: string, outcome: 'Yes' | 'No') => {
+  resolveMarket: async (provider: AnchorProvider, marketId: string, outcome: 'Yes' | 'No') => {
     set({ isLoading: true, error: null });
     try {
-      const provider = useAnchorProvider();
       const program = getBettingProgram(provider);
       
       const market = get().getMarketById(marketId);
@@ -270,7 +264,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
         .rpc();
       
       // Refresh the markets list
-      await get().fetchMarkets();
+      await get().fetchMarkets(provider);
       
       set({ isLoading: false });
     } catch (error) {
@@ -282,10 +276,9 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     }
   },
 
-  claimWinnings: async (marketId: string) => {
+  claimWinnings: async (provider: AnchorProvider, marketId: string) => {
     set({ isLoading: true, error: null });
     try {
-      const provider = useAnchorProvider();
       const program = getBettingProgram(provider);
       
       const market = get().getMarketById(marketId);
@@ -304,7 +297,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
         .rpc();
       
       // Refresh the markets list
-      await get().fetchMarkets();
+      await get().fetchMarkets(provider);
       
       set({ isLoading: false });
     } catch (error) {
