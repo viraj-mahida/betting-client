@@ -4,6 +4,7 @@ import {
   AnchorWallet,
   ConnectionProvider,
   WalletProvider,
+  useAnchorWallet,
   useConnection,
   useWallet,
 } from '@solana/wallet-adapter-react';
@@ -57,7 +58,7 @@ export const useWalletContext = () => {
 
 export function useAnchorProvider(){
   const { connection } = useConnection();
-  const wallet = useWallet();
+  const wallet = useAnchorWallet();
 
   return new AnchorProvider(connection, wallet as AnchorWallet, {
     commitment: "confirmed"
