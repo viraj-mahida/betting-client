@@ -1,38 +1,146 @@
 import { create } from 'zustand';
-import { Market, MarketWithUserPosition, CreateMarketParams } from '../utils/types';
-import { mockMarkets } from '../utils/mockData';
+import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
+import { BN, web3 } from '@coral-xyz/anchor';
 import { getBettingProgram } from '../utils/anchor';
 import { useAnchorProvider } from '../contexts/WalletContext';
 
+// Types that align with the Anchor contract
+export type Outcome = 'Undecided' | 'Yes' | 'No';
+
+export type Bettor = {
+  bettor: PublicKey;
+  amount: BN;
+}
+
+export type Market = {
+  id: BN;
+  creator: PublicKey;
+  question: string;
+  resolved: boolean;
+  outcome: Outcome;
+  totalYesAmount: BN;
+  totalNoAmount: BN;
+  yesBettors: Bettor[];
+  noBettors: Bettor[];
+}
+
+export type CreateMarketParams = {
+  question: string;
+}
+
+export type UserPosition = {
+  yesBets: BN;
+  noBets: BN;
+  totalStaked: BN;
+}
+
+export type MarketWithUserPosition = Market & {
+  userPosition?: UserPosition;
+}
+
 interface MarketStore {
   markets: MarketWithUserPosition[];
+  bettingState: { authority: PublicKey; marketCount: BN } | null;
   isLoading: boolean;
   error: string | null;
   fetchMarkets: () => Promise<void>;
+  fetchBettingState: () => Promise<void>;
   getMarketById: (id: string) => MarketWithUserPosition | undefined;
-  createMarket: (params: CreateMarketParams) => Promise<Market>;
-  placeBet: (marketId: string, amount: number, outcome: 'yes' | 'no') => Promise<void>;
-  resolveMarket: (marketId: string, outcome: 'yes' | 'no') => Promise<void>;
+  createMarket: (params: CreateMarketParams) => Promise<void>;
+  placeBet: (marketId: string, amount: number, outcome: 'Yes' | 'No') => Promise<void>;
+  resolveMarket: (marketId: string, outcome: 'Yes' | 'No') => Promise<void>;
   claimWinnings: (marketId: string) => Promise<void>;
   userCreatedMarkets: (userAddress: string) => MarketWithUserPosition[];
-  filteredMarkets: (status?: 'open' | 'closed' | 'resolved') => MarketWithUserPosition[];
+  filteredMarkets: (status?: 'open' | 'resolved') => MarketWithUserPosition[];
 }
 
 export const useMarketStore = create<MarketStore>((set, get) => ({
   markets: [],
+  bettingState: null,
   isLoading: false,
   error: null,
+
+  fetchBettingState: async () => {
+    set({ isLoading: true, error: null });
+    try {
+      const provider = useAnchorProvider();
+      const program = getBettingProgram(provider);
+      
+      // Fetch the betting state account
+      // In actual implementation, you'd need to know the address of the betting state account
+      // This is just a placeholder approach
+      const [bettingStatePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("betting_state")],
+        program.programId
+      );
+      
+      const bettingState = await program.account.bettingState.fetch(bettingStatePda);
+      
+      set({ 
+        bettingState: {
+          authority: bettingState.authority,
+          marketCount: bettingState.marketCount
+        },
+        isLoading: false 
+      });
+    } catch (error) {
+      set({ 
+        error: error instanceof Error ? error.message : 'Failed to fetch betting state', 
+        isLoading: false 
+      });
+    }
+  },
 
   fetchMarkets: async () => {
     set({ isLoading: true, error: null });
     try {
-      // In a real app, this would be an API call
-      // const response = await fetch('/api/markets');
-      // const data = await response.json();
+      const provider = useAnchorProvider();
+      const program = getBettingProgram(provider);
       
-      // Using mock data instead
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate network delay
-      set({ markets: mockMarkets, isLoading: false });
+      // Fetch all market accounts
+      const allMarkets = await program.account.market.all();
+      const userWallet = provider.wallet.publicKey;
+      
+      // Transform to our expected format and calculate user positions
+      const marketsWithPositions: MarketWithUserPosition[] = allMarkets.map(item => {
+        const market = item.account;
+        
+        // Check if user has positions
+        const userYesBet = market.yesBettors.find(
+          bettor => bettor.bettor.equals(userWallet)
+        );
+        
+        const userNoBet = market.noBettors.find(
+          bettor => bettor.bettor.equals(userWallet)
+        );
+        
+        let userPosition: UserPosition | undefined;
+        
+        if (userYesBet || userNoBet) {
+          userPosition = {
+            yesBets: userYesBet ? userYesBet.amount : new BN(0),
+            noBets: userNoBet ? userNoBet.amount : new BN(0),
+            totalStaked: new BN(0)
+              .add(userYesBet ? userYesBet.amount : new BN(0))
+              .add(userNoBet ? userNoBet.amount : new BN(0))
+          };
+        }
+        
+        return {
+          id: market.id,
+          creator: market.creator,
+          question: market.question,
+          resolved: market.resolved,
+          outcome: market.outcome,
+          totalYesAmount: market.totalYesAmount,
+          totalNoAmount: market.totalNoAmount,
+          yesBettors: market.yesBettors,
+          noBettors: market.noBettors,
+          userPosition
+        };
+      });
+      
+      set({ markets: marketsWithPositions, isLoading: false });
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to fetch markets', 
@@ -42,41 +150,55 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
   },
 
   getMarketById: (id: string) => {
-    return get().markets.find(market => market.id === id);
+    return get().markets.find(market => market.id.toString() === id);
   },
 
   createMarket: async (params: CreateMarketParams) => {
     set({ isLoading: true, error: null });
     try {
-      // In a real app, this would be a blockchain transaction
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate transaction time
-
       const provider = useAnchorProvider();
-
       const program = getBettingProgram(provider);
-
-      const marketAccount = program.account.
       
-      const newMarket: Market = {
-        id: `market-${Date.now()}`,
-        creator: 'DEMO_WALLET_ADDRESS', // Would be the connected wallet address
-        title: params.title,
-        description: params.description,
-        closingDate: params.closingDate,
-        resolutionDeadline: params.resolutionDeadline,
-        yesPool: params.initialLiquidity || 0,
-        noPool: params.initialLiquidity || 0,
-        totalLiquidity: (params.initialLiquidity || 0) * 2,
-        status: 'open',
-        createdAt: new Date(),
-      };
+      // Get the betting state account
+      if (!get().bettingState) {
+        await get().fetchBettingState();
+      }
       
-      set(state => ({
-        markets: [...state.markets, newMarket as MarketWithUserPosition],
-        isLoading: false
-      }));
+      const bettingState = get().bettingState;
+      if (!bettingState) {
+        throw new Error("Betting state not found");
+      }
       
-      return newMarket;
+      // Get the betting state PDA
+      const [bettingStatePda] = PublicKey.findProgramAddressSync(
+        [Buffer.from("betting_state")],
+        program.programId
+      );
+      
+      // Calculate the PDA for the new market
+      const [marketPda] = PublicKey.findProgramAddressSync(
+        [
+          Buffer.from("market"),
+          bettingState.marketCount.toBuffer('le', 8)
+        ],
+        program.programId
+      );
+      
+      // Send the transaction
+      await program.methods
+        .createMarket(params.question)
+        .accounts({
+          bettingState: bettingStatePda,
+          // market: marketPda,
+          creator: provider.wallet.publicKey,
+          // systemProgram: SystemProgram.programId
+        })
+        .rpc();
+      
+      // Refresh the markets list
+      await get().fetchMarkets();
+      
+      set({ isLoading: false });
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to create market', 
@@ -86,60 +208,35 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     }
   },
 
-  placeBet: async (marketId: string, amount: number, outcome: 'yes' | 'no') => {
+  placeBet: async (marketId: string, amount: number, outcome: 'Yes' | 'No') => {
     set({ isLoading: true, error: null });
     try {
-      // In a real app, this would be a blockchain transaction
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate transaction time
+      const provider = useAnchorProvider();
+      const program = getBettingProgram(provider);
       
-      set(state => {
-        const updatedMarkets = state.markets.map(market => {
-          if (market.id === marketId) {
-            // Update the market pools and user position
-            const updatedMarket = { ...market };
-            
-            if (outcome === 'yes') {
-              updatedMarket.yesPool += amount;
-            } else {
-              updatedMarket.noPool += amount;
-            }
-            
-            updatedMarket.totalLiquidity = updatedMarket.yesPool + updatedMarket.noPool;
-            
-            // Update or create user position
-            if (!updatedMarket.userPosition) {
-              updatedMarket.userPosition = {
-                yesBets: outcome === 'yes' ? amount : 0,
-                noBets: outcome === 'no' ? amount : 0,
-                totalStaked: amount,
-                potentialPayout: 0, // Calculate this based on odds
-              };
-            } else {
-              if (outcome === 'yes') {
-                updatedMarket.userPosition.yesBets += amount;
-              } else {
-                updatedMarket.userPosition.noBets += amount;
-              }
-              updatedMarket.userPosition.totalStaked += amount;
-            }
-            
-            // Calculate potential payout (simplified)
-            const winPool = outcome === 'yes' ? updatedMarket.yesPool : updatedMarket.noPool;
-            const losePool = outcome === 'yes' ? updatedMarket.noPool : updatedMarket.yesPool;
-            const userBet = outcome === 'yes' ? updatedMarket.userPosition.yesBets : updatedMarket.userPosition.noBets;
-            
-            // Payout formula: (User's bet / Total winning pool) * Total losing pool + User's original bet
-            // Apply 1% platform fee
-            const potentialPayout = (userBet / winPool) * losePool * 0.99 + userBet;
-            updatedMarket.userPosition.potentialPayout = potentialPayout;
-            
-            return updatedMarket;
-          }
-          return market;
-        });
-        
-        return { markets: updatedMarkets, isLoading: false };
-      });
+      const market = get().getMarketById(marketId);
+      if (!market) {
+        throw new Error("Market not found");
+      }
+      
+      // Convert string outcome to enum value expected by the contract
+      // In Anchor, enum variants are typically lowercase 
+      const outcomeEnum = { [outcome.toLowerCase()]: {} };
+      
+      // Send the transaction
+      await program.methods
+        .placeBet(outcomeEnum, new BN(amount))
+        .accounts({
+          market: new PublicKey(market.id.toString()),
+          bettor: provider.wallet.publicKey,
+          // systemProgram: SystemProgram.programId
+        })
+        .rpc();
+      
+      // Refresh the markets list
+      await get().fetchMarkets();
+      
+      set({ isLoading: false });
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to place bet', 
@@ -149,26 +246,33 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     }
   },
 
-  resolveMarket: async (marketId: string, outcome: 'yes' | 'no') => {
+  resolveMarket: async (marketId: string, outcome: 'Yes' | 'No') => {
     set({ isLoading: true, error: null });
     try {
-      // In a real app, this would be a blockchain transaction
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate transaction time
+      const provider = useAnchorProvider();
+      const program = getBettingProgram(provider);
       
-      set(state => {
-        const updatedMarkets = state.markets.map(market => {
-          if (market.id === marketId) {
-            return {
-              ...market,
-              status: 'resolved',
-              outcome
-            };
-          }
-          return market;
-        });
-        
-        return { markets: updatedMarkets, isLoading: false };
-      });
+      const market = get().getMarketById(marketId);
+      if (!market) {
+        throw new Error("Market not found");
+      }
+      
+      // Convert string outcome to enum value expected by the contract
+      const outcomeEnum = { [outcome.toLowerCase()]: {} };
+      
+      // Send the transaction
+      await program.methods
+        .resolveMarket(outcomeEnum)
+        .accounts({
+          market: new PublicKey(market.id.toString()),
+          creator: provider.wallet.publicKey
+        })
+        .rpc();
+      
+      // Refresh the markets list
+      await get().fetchMarkets();
+      
+      set({ isLoading: false });
     } catch (error) {
       set({ 
         error: error instanceof Error ? error.message : 'Failed to resolve market', 
@@ -181,11 +285,26 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
   claimWinnings: async (marketId: string) => {
     set({ isLoading: true, error: null });
     try {
-      // In a real app, this would be a blockchain transaction
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate transaction time
+      const provider = useAnchorProvider();
+      const program = getBettingProgram(provider);
       
-      // In a real implementation, this would transfer tokens to the user's wallet
-      // and update their position data on-chain
+      const market = get().getMarketById(marketId);
+      if (!market) {
+        throw new Error("Market not found");
+      }
+      
+      // Send the transaction
+      await program.methods
+        .claimWinnings()
+        .accounts({
+          market: new PublicKey(market.id.toString()),
+          claimant: provider.wallet.publicKey,
+          // systemProgram: SystemProgram.programId
+        })
+        .rpc();
+      
+      // Refresh the markets list
+      await get().fetchMarkets();
       
       set({ isLoading: false });
     } catch (error) {
@@ -198,12 +317,21 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
   },
 
   userCreatedMarkets: (userAddress: string) => {
-    return get().markets.filter(market => market.creator === userAddress);
+    return get().markets.filter(market => 
+      market.creator.toString() === userAddress
+    );
   },
 
   filteredMarkets: (status) => {
     const markets = get().markets;
     if (!status) return markets;
-    return markets.filter(market => market.status === status);
+    
+    if (status === 'open') {
+      return markets.filter(market => !market.resolved);
+    } else if (status === 'resolved') {
+      return markets.filter(market => market.resolved);
+    }
+    
+    return markets;
   }
 }));
