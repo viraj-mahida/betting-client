@@ -7,27 +7,21 @@ export const formatNumber = (num: number): string => {
 
 // Format currency (USDC)
 export const formatCurrency = (amount: number): string => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
+  // Format with 9 decimal places
+  const formatted = new Intl.NumberFormat('en-US', {
+    style: 'decimal',
+    currency: 'SOL',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 9,
   }).format(amount);
+  
+  // Remove trailing zeros after the decimal point
+  return formatted.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
 };
 
 // Format a date to human readable format
 export const formatDate = (date: Date | number): string => {
   return format(date, 'MMM d, yyyy');
-};
-
-// Format a date with time
-export const formatDateTime = (date: Date | number): string => {
-  return format(date, 'MMM d, yyyy h:mm a');
-};
-
-// Get time remaining in readable format
-export const getTimeRemaining = (targetDate: Date | number): string => {
-  return formatDistance(new Date(targetDate), new Date(), { addSuffix: true });
 };
 
 // Format percentage

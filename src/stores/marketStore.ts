@@ -4,11 +4,7 @@ import { BN, web3, AnchorProvider } from '@coral-xyz/anchor';
 import { getBettingProgram } from '../utils/anchor';
 
 // Types that align with the Anchor contract
-export enum Outcome {
-  Undecided = 'Undecided',
-  Yes = 'Yes',
-  No = 'No'
-}
+export type Outcome = 'Undecided' | 'Yes' | 'No';
 
 export type Bettor = {
   bettor: PublicKey;
@@ -46,11 +42,11 @@ interface MarketStore {
   isLoading: boolean;
   error: string | null;
   fetchMarkets: (provider: AnchorProvider) => Promise<void>;
-  getMarketById: (id: string) => MarketWithUserPosition | undefined;
+  getMarketById: (marketPublicKeyString: string) => MarketWithUserPosition | undefined;
   createMarket: (provider: AnchorProvider, params: CreateMarketParams) => Promise<void>;
-  placeBet: (provider: AnchorProvider, marketId: string, amount: number, outcome: 'Yes' | 'No') => Promise<void>;
-  resolveMarket: (provider: AnchorProvider, marketId: string, outcome: 'Yes' | 'No') => Promise<void>;
-  claimWinnings: (provider: AnchorProvider, marketId: string) => Promise<void>;
+  placeBet: (provider: AnchorProvider, marketPublicKeyString: string, amount: number, outcome: 'Yes' | 'No') => Promise<void>;
+  resolveMarket: (provider: AnchorProvider, marketPublicKeyString: string, outcome: 'Yes' | 'No') => Promise<void>;
+  claimWinnings: (provider: AnchorProvider, marketPublicKeyString: string) => Promise<void>;
   userCreatedMarkets: (userAddress: string) => MarketWithUserPosition[];
   filteredMarkets: (status?: 'open' | 'resolved') => MarketWithUserPosition[];
 }
@@ -67,51 +63,33 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
       
       // Fetch all market accounts
       const allMarkets = await program.account.market.all();
-      const userWallet = provider.wallet.publicKey;
-      
-      // Transform to our expected format and calculate user positions
-      const marketsWithPositions: MarketWithUserPosition[] = allMarkets.map(item => {
-        const market = item.account;
-        const publicKey = item.publicKey;  // Get the account address
-        
-        // Check if user has positions
-        const userYesBet = market.yesBettors.find(
-          bettor => bettor.bettor.equals(userWallet)
-        );
-        
-        const userNoBet = market.noBettors.find(
-          bettor => bettor.bettor.equals(userWallet)
-        );
-        
-        let userPosition: UserPosition | undefined;
-        
-        if (userYesBet || userNoBet) {
-          userPosition = {
-            yesBets: userYesBet ? userYesBet.amount : new BN(0),
-            noBets: userNoBet ? userNoBet.amount : new BN(0),
-            totalStaked: new BN(0)
-              .add(userYesBet ? userYesBet.amount : new BN(0))
-              .add(userNoBet ? userNoBet.amount : new BN(0))
-          };
-        }
 
-        console.log({allMarkets});
-        console.log({marketsWithPositions});
+      console.log({allMarkets});
+      
+      // Transform program accounts to MarketWithUserPosition format
+      const marketsWithPositions: MarketWithUserPosition[] = allMarkets.map(account => {
+        // Map the outcome object to the expected Outcome type string
+        let outcomeValue: 'Undecided' | 'Yes' | 'No' = 'Undecided';
+        if (account.account.outcome.yes) {
+          outcomeValue = 'Yes';
+        } else if (account.account.outcome.no) {
+          outcomeValue = 'No';
+        }
         
         return {
-          publicKey,
-          creator: market.creator,
-          question: market.question,
-          resolved: market.resolved,
-          outcome: market.outcome,
-          totalYesAmount: market.totalYesAmount,
-          totalNoAmount: market.totalNoAmount,
-          yesBettors: market.yesBettors,
-          noBettors: market.noBettors,
-          userPosition
+          publicKey: account.publicKey,
+          creator: account.account.creator,
+          question: account.account.question,
+          resolved: account.account.resolved,
+          outcome: outcomeValue,
+          totalYesAmount: account.account.totalYesAmount,
+          totalNoAmount: account.account.totalNoAmount,
+          yesBettors: account.account.yesBettors,
+          noBettors: account.account.noBettors,
+          // userPosition: undefined
         };
       });
-      
+
       set({ markets: marketsWithPositions, isLoading: false });
     } catch (error) {
       set({ 
@@ -121,8 +99,10 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     }
   },
 
-  getMarketById: (id: string) => {
-    return get().markets.find(market => market.publicKey.toString() === id);
+  getMarketById: (publicKeyString: string) => {
+    console.log({publicKeyString});
+    console.log(get().markets);
+    return get().markets.find(market => market.publicKey.toString() === publicKeyString);
   },
 
   createMarket: async (provider: AnchorProvider, params: CreateMarketParams) => {
@@ -156,15 +136,10 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     }
   },
 
-  placeBet: async (provider: AnchorProvider, marketId: string, amount: number, outcome: 'Yes' | 'No') => {
+  placeBet: async (provider: AnchorProvider, marketPublicKeyString: string, amount: number, outcome: 'Yes' | 'No') => {
     set({ isLoading: true, error: null });
     try {
       const program = getBettingProgram(provider);
-      
-      const market = get().getMarketById(marketId);
-      if (!market) {
-        throw new Error("Market not found");
-      }
       
       // Convert string outcome to enum value expected by the contract
       const outcomeEnum = { [outcome.toLowerCase()]: {} };
@@ -173,7 +148,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
       await program.methods
         .placeBet(outcomeEnum, new BN(amount))
         .accounts({
-          market: new PublicKey(market.publicKey.toString()),
+          market: new PublicKey(marketPublicKeyString),
           bettor: provider.wallet.publicKey
         })
         .rpc();

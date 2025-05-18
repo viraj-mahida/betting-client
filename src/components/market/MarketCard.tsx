@@ -3,8 +3,6 @@ import { TrendingUp } from 'lucide-react';
 import { formatCurrency, oddsToPercentage } from '../../utils/format';
 import { MarketWithUserPosition } from '../../utils/types';
 import { cn } from '../../utils/cn';
-import { PublicKey } from '@solana/web3.js';
-import { BN } from '@coral-xyz/anchor';
 
 interface MarketCardProps {
   market: MarketWithUserPosition;

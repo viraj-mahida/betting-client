@@ -7,10 +7,7 @@ import { useMarketStore } from '../stores/marketStore';
 const HomePage = () => {
   const { markets, isLoading } = useMarketStore();
   
-  // Get the top markets by liquidity (max 6)
-  const topMarkets = [...markets]
-    .sort((a, b) => b.totalYesAmount.plus(b.totalNoAmount).minus(a.totalYesAmount.plus(a.totalNoAmount)).toNumber())
-    .slice(0, 6);
+  const topMarkets = [...markets].slice(0, 6);
 
   return (
     <div className="animate-fadeIn">

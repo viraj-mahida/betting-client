@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, Check, X, Clock, AlertTriangle } from 'lucide-react';
+import { ChevronLeft, Check, X, Clock } from 'lucide-react';
 import { MarketWithUserPosition } from '../../utils/types';
-import { formatCurrency, oddsToPercentage, getTimeRemaining } from '../../utils/format';
+import { formatCurrency, oddsToPercentage } from '../../utils/format';
 import Button from '../common/Button';
 
 interface MarketHeaderProps {
@@ -11,11 +11,11 @@ interface MarketHeaderProps {
 
 const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
   const navigate = useNavigate();
-  const { title, description, status, yesPool, noPool, totalLiquidity, closingDate, outcome } = market;
+  const { question, outcome, totalYesAmount, totalNoAmount } = market;
 
   // Calculate odds
-  const yesPercentage = yesPool / totalLiquidity;
-  const noPercentage = noPool / totalLiquidity;
+  const yesPercentage = totalYesAmount / (totalYesAmount + totalNoAmount);
+  const noPercentage = totalNoAmount / (totalYesAmount + totalNoAmount);
 
   const isCreator = true; // This would check if current user is the creator
 
@@ -40,30 +40,20 @@ const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
 
         <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center">
-            {status === 'open' && (
+            {!market.resolved ? (
               <div className="mr-2 flex items-center rounded-full bg-success-500 px-2 py-0.5 text-xs font-medium">
                 <Clock size={12} className="mr-1" />
                 <span>Open for betting</span>
               </div>
-            )}
-            {status === 'closed' && (
-              <div className="mr-2 flex items-center rounded-full bg-warning-500 px-2 py-0.5 text-xs font-medium text-slate-900">
-                <Clock size={12} className="mr-1" />
-                <span>Betting closed</span>
-              </div>
-            )}
-            {status === 'resolved' && (
+            ) : (
               <div className="mr-2 flex items-center rounded-full bg-primary-300 px-2 py-0.5 text-xs font-medium text-primary-900">
                 <Check size={12} className="mr-1" />
                 <span>Resolved: {outcome?.toUpperCase()}</span>
               </div>
             )}
-            <span className="text-sm font-medium text-white/70">
-              {getTimeRemaining(closingDate)}
-            </span>
           </div>
 
-          {status === 'closed' && isCreator && (
+          {!market.resolved && isCreator && (
             <div className="flex space-x-2">
               <Button
                 size="sm"
@@ -85,9 +75,7 @@ const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
           )}
         </div>
 
-        <h1 className="mb-3 text-2xl font-bold sm:text-3xl">{title}</h1>
-
-        <p className="mb-6 max-w-3xl text-white/90">{description}</p>
+        <h1 className="mb-3 text-2xl font-bold sm:text-3xl">{question}</h1>
 
         <div className="overflow-hidden rounded-lg bg-white/10 backdrop-blur">
           <div className="flex flex-col md:flex-row">
@@ -95,11 +83,11 @@ const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
               <div className="mb-1 flex items-center">
                 <Check size={18} className="mr-2 text-success-300" />
                 <span className="font-medium">YES</span>
-                <span className="ml-auto text-sm">{oddsToPercentage(yesPercentage)}</span>
+                <span className="ml-auto text-sm">{isNaN(yesPercentage) ? '--%' : oddsToPercentage(yesPercentage)}</span>
               </div>
               <div className="mt-1 flex items-baseline">
-                <span className="text-2xl font-bold">{formatCurrency(yesPool)}</span>
-                <span className="ml-1 text-sm text-white/70">USDC</span>
+                <span className="text-2xl font-bold">{formatCurrency(totalYesAmount)}</span>
+                <span className="ml-1 text-sm text-white/70">SOL</span>
               </div>
             </div>
 
@@ -107,11 +95,11 @@ const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
               <div className="mb-1 flex items-center">
                 <X size={18} className="mr-2 text-error-300" />
                 <span className="font-medium">NO</span>
-                <span className="ml-auto text-sm">{oddsToPercentage(noPercentage)}</span>
+                <span className="ml-auto text-sm">{isNaN(noPercentage) ? '--%' : oddsToPercentage(noPercentage)}</span>
               </div>
               <div className="mt-1 flex items-baseline">
-                <span className="text-2xl font-bold">{formatCurrency(noPool)}</span>
-                <span className="ml-1 text-sm text-white/70">USDC</span>
+                <span className="text-2xl font-bold">{formatCurrency(totalNoAmount)}</span>
+                <span className="ml-1 text-sm text-white/70">SOL</span>
               </div>
             </div>
           </div>

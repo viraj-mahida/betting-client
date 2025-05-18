@@ -8,30 +8,32 @@ import UserPositionCard from '../components/market/UserPositionCard';
 import { useWalletContext } from '../contexts/WalletContext';
 
 const MarketPage = () => {
-  const { id } = useParams<{ id: string }>();
+  const { marketPublicKeyString } = useParams<{ marketPublicKeyString: string }>();
   const { getMarketById, resolveMarket } = useMarketStore();
   const { isConnected } = useWalletContext();
   const [isResolving, setIsResolving] = useState(false);
 
-  const market = getMarketById(id!);
+  const marketNotFoundComp =  <div className="container mx-auto px-4 py-8">
+  <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800">
+    <h1 className="mb-2 text-2xl font-bold">Market Not Found</h1>
+    <p className="text-slate-600 dark:text-slate-400">
+      The market you're looking for doesn't exist or has been removed.
+    </p>
+  </div>
+</div>
 
-  if (!market) {
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800">
-          <h1 className="mb-2 text-2xl font-bold">Market Not Found</h1>
-          <p className="text-slate-600 dark:text-slate-400">
-            The market you're looking for doesn't exist or has been removed.
-          </p>
-        </div>
-      </div>
-    );
-  }
+  // if (!marketPublicKeyString) {
+  //   return marketNotFoundComp;
+  // }
+
+  const market = getMarketById(marketPublicKeyString!);
+
+  console.log("market market market,",{market});
 
   const handleResolveMarket = async (outcome: 'yes' | 'no') => {
     setIsResolving(true);
     try {
-      await resolveMarket(market.id, outcome);
+      // await resolveMarket(market.id, outcome);
     } catch (error) {
       console.error('Failed to resolve market:', error);
     } finally {
@@ -44,24 +46,23 @@ const MarketPage = () => {
     console.log('Bet placed successfully');
   };
 
+  if (!market) {
+    return marketNotFoundComp;
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 animate-fadeIn">
-      <MarketHeader market={market} onResolve={handleResolveMarket} />
 
       <div className="grid gap-6 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <div className="card mb-6 p-6">
-            <h2 className="mb-4 text-xl font-semibold">About This Market</h2>
-            <p className="text-slate-700 dark:text-slate-300">{market.description}</p>
-          </div>
-
+          <MarketHeader market={market} onResolve={handleResolveMarket} />
           <MarketStats market={market} />
         </div>
 
         <div className="flex flex-col space-y-6">
           {isConnected ? (
             <>
-              {market.status === 'open' && <BettingInterface market={market} onBetPlaced={handleBetPlaced} />}
+              {!market.resolved && <BettingInterface market={market} onBetPlaced={handleBetPlaced} />}
               <UserPositionCard market={market} />
             </>
           ) : (

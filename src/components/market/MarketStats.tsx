@@ -1,6 +1,6 @@
-import { ChevronUp, ChevronDown, Users, TrendingUp, CalendarClock } from 'lucide-react';
+import { ChevronUp, ChevronDown, TrendingUp } from 'lucide-react';
 import { MarketWithUserPosition } from '../../utils/types';
-import { formatCurrency, formatDateTime, oddsToPercentage } from '../../utils/format';
+import { formatCurrency, oddsToPercentage } from '../../utils/format';
 
 interface MarketStatsProps {
   market: MarketWithUserPosition;
@@ -8,22 +8,14 @@ interface MarketStatsProps {
 
 const MarketStats = ({ market }: MarketStatsProps) => {
   const {
-    yesPool,
-    noPool,
-    totalLiquidity,
-    closingDate,
-    resolutionDeadline,
-    status,
     outcome,
+    totalYesAmount,
+    totalNoAmount,
   } = market;
 
   // Calculate odds
-  const yesPercentage = yesPool / totalLiquidity;
-  const noPercentage = noPool / totalLiquidity;
-
-  // Format dates
-  const closingDateFormatted = formatDateTime(closingDate);
-  const resolutionDeadlineFormatted = formatDateTime(resolutionDeadline);
+  const yesPercentage = totalYesAmount / (totalYesAmount + totalNoAmount);
+  const noPercentage = totalNoAmount / (totalYesAmount + totalNoAmount);
 
   return (
     <div className="card">
@@ -37,7 +29,7 @@ const MarketStats = ({ market }: MarketStatsProps) => {
             <div className="mb-1 text-xs font-medium uppercase text-slate-500">Yes Pool</div>
             <div className="flex items-center">
               <ChevronUp className="mr-1 text-primary-500" size={18} />
-              <span className="text-lg font-semibold">{formatCurrency(yesPool)}</span>
+              <span className="text-lg font-semibold">{formatCurrency(totalYesAmount)}</span>
             </div>
             <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               {oddsToPercentage(yesPercentage)} odds
@@ -48,7 +40,7 @@ const MarketStats = ({ market }: MarketStatsProps) => {
             <div className="mb-1 text-xs font-medium uppercase text-slate-500">No Pool</div>
             <div className="flex items-center">
               <ChevronDown className="mr-1 text-error-500" size={18} />
-              <span className="text-lg font-semibold">{formatCurrency(noPool)}</span>
+              <span className="text-lg font-semibold">{formatCurrency(totalNoAmount)}</span>
             </div>
             <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">
               {oddsToPercentage(noPercentage)} odds
@@ -59,29 +51,11 @@ const MarketStats = ({ market }: MarketStatsProps) => {
             <div className="mb-1 text-xs font-medium uppercase text-slate-500">Total Liquidity</div>
             <div className="flex items-center">
               <TrendingUp className="mr-1 text-secondary-500" size={18} />
-              <span className="text-lg font-semibold">{formatCurrency(totalLiquidity)}</span>
+              <span className="text-lg font-semibold">{formatCurrency(totalYesAmount + totalNoAmount)}</span>
             </div>
             <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              {status === 'resolved' ? `Outcome: ${outcome?.toUpperCase()}` : 'Currently in play'}
+              {`Outcome: ${outcome?.toUpperCase()}`}
             </div>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-start justify-between border-b border-slate-200 pb-2 dark:border-slate-700">
-            <div className="flex items-center">
-              <CalendarClock size={16} className="mr-2 text-slate-400" />
-              <span className="text-sm font-medium">Betting closes at</span>
-            </div>
-            <div className="text-right text-sm">{closingDateFormatted}</div>
-          </div>
-
-          <div className="flex items-start justify-between">
-            <div className="flex items-center">
-              <CalendarClock size={16} className="mr-2 text-slate-400" />
-              <span className="text-sm font-medium">Resolution deadline</span>
-            </div>
-            <div className="text-right text-sm">{resolutionDeadlineFormatted}</div>
           </div>
         </div>
       </div>

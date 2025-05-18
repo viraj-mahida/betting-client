@@ -30,7 +30,7 @@ function App() {
       <Route path="/" element={<Layout />}>
         <Route index element={<HomePage />} />
         <Route path="explore" element={<ExplorePage />} />
-        <Route path="market/:id" element={<MarketPage />} />
+        <Route path="market/:marketPublicKeyString" element={<MarketPage />} />
         <Route path="create" element={<CreateMarketPage />} />
         <Route path="dashboard" element={<DashboardPage />} />
         <Route path="*" element={<NotFoundPage />} />
