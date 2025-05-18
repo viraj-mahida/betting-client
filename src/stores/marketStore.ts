@@ -1,10 +1,14 @@
 import { create } from 'zustand';
-import { Connection, PublicKey, SystemProgram } from '@solana/web3.js';
+import { PublicKey } from '@solana/web3.js';
 import { BN, web3, AnchorProvider } from '@coral-xyz/anchor';
 import { getBettingProgram } from '../utils/anchor';
 
 // Types that align with the Anchor contract
-export type Outcome = 'Undecided' | 'Yes' | 'No';
+export enum Outcome {
+  Undecided = 'Undecided',
+  Yes = 'Yes',
+  No = 'No'
+}
 
 export type Bettor = {
   bettor: PublicKey;
@@ -12,7 +16,6 @@ export type Bettor = {
 }
 
 export type Market = {
-  id: BN;
   creator: PublicKey;
   question: string;
   resolved: boolean;
@@ -34,16 +37,15 @@ export type UserPosition = {
 }
 
 export type MarketWithUserPosition = Market & {
+  publicKey: PublicKey;
   userPosition?: UserPosition;
 }
 
 interface MarketStore {
   markets: MarketWithUserPosition[];
-  bettingState: { authority: PublicKey; marketCount: BN } | null;
   isLoading: boolean;
   error: string | null;
   fetchMarkets: (provider: AnchorProvider) => Promise<void>;
-  fetchBettingState: (provider: AnchorProvider) => Promise<void>;
   getMarketById: (id: string) => MarketWithUserPosition | undefined;
   createMarket: (provider: AnchorProvider, params: CreateMarketParams) => Promise<void>;
   placeBet: (provider: AnchorProvider, marketId: string, amount: number, outcome: 'Yes' | 'No') => Promise<void>;
@@ -55,39 +57,8 @@ interface MarketStore {
 
 export const useMarketStore = create<MarketStore>((set, get) => ({
   markets: [],
-  bettingState: null,
   isLoading: false,
   error: null,
-  
-  fetchBettingState: async (provider: AnchorProvider) => {
-    set({ isLoading: true, error: null });
-    try {
-      const program = getBettingProgram(provider);
-      
-      // Fetch the betting state account
-      // In actual implementation, you'd need to know the address of the betting state account
-      // This is just a placeholder approach
-      const [bettingStatePda] = PublicKey.findProgramAddressSync(
-        [Buffer.from("betting_state")],
-        program.programId
-      );
-      
-      const bettingState = await program.account.bettingState.fetch(bettingStatePda);
-      
-      set({ 
-        bettingState: {
-          authority: bettingState.authority,
-          marketCount: bettingState.marketCount
-        },
-        isLoading: false 
-      });
-    } catch (error) {
-      set({ 
-        error: error instanceof Error ? error.message : 'Failed to fetch betting state', 
-        isLoading: false 
-      });
-    }
-  },
 
   fetchMarkets: async (provider: AnchorProvider) => {
     set({ isLoading: true, error: null });
@@ -101,6 +72,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
       // Transform to our expected format and calculate user positions
       const marketsWithPositions: MarketWithUserPosition[] = allMarkets.map(item => {
         const market = item.account;
+        const publicKey = item.publicKey;  // Get the account address
         
         // Check if user has positions
         const userYesBet = market.yesBettors.find(
@@ -122,9 +94,12 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
               .add(userNoBet ? userNoBet.amount : new BN(0))
           };
         }
+
+        console.log({allMarkets});
+        console.log({marketsWithPositions});
         
         return {
-          id: market.id,
+          publicKey,
           creator: market.creator,
           question: market.question,
           resolved: market.resolved,
@@ -147,7 +122,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
   },
 
   getMarketById: (id: string) => {
-    return get().markets.find(market => market.id.toString() === id);
+    return get().markets.find(market => market.publicKey.toString() === id);
   },
 
   createMarket: async (provider: AnchorProvider, params: CreateMarketParams) => {
@@ -155,43 +130,20 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     try {
       const program = getBettingProgram(provider);
       
-      // Get the betting state account
-      if (!get().bettingState) {
-        await get().fetchBettingState(provider);
-      }
+      // Generate a new keypair for the market account
+      const marketKeypair = web3.Keypair.generate();
       
-      const bettingState = get().bettingState;
-      if (!bettingState) {
-        throw new Error("Betting state not found");
-      }
-      
-      // Get the betting state PDA
-      const [bettingStatePda] = PublicKey.findProgramAddressSync(
-        [Buffer.from("betting_state")],
-        program.programId
-      );
-      
-      // Calculate the PDA for the new market
-      const [marketPda] = PublicKey.findProgramAddressSync(
-        [
-          Buffer.from("market"),
-          bettingState.marketCount.toBuffer('le', 8)
-        ],
-        program.programId
-      );
-      
-      // Send the transaction
+      // Create the market
       await program.methods
         .createMarket(params.question)
         .accounts({
-          bettingState: bettingStatePda,
-          // market: marketPda,
-          creator: provider.wallet.publicKey,
-          // systemProgram: SystemProgram.programId
+          market: marketKeypair.publicKey,
+          creator: provider.wallet.publicKey
         })
+        .signers([marketKeypair])
         .rpc();
       
-      // Refresh the markets list
+      // Fetch markets after creation
       await get().fetchMarkets(provider);
       
       set({ isLoading: false });
@@ -215,16 +167,14 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
       }
       
       // Convert string outcome to enum value expected by the contract
-      // In Anchor, enum variants are typically lowercase 
       const outcomeEnum = { [outcome.toLowerCase()]: {} };
       
       // Send the transaction
       await program.methods
         .placeBet(outcomeEnum, new BN(amount))
         .accounts({
-          market: new PublicKey(market.id.toString()),
-          bettor: provider.wallet.publicKey,
-          // systemProgram: SystemProgram.programId
+          market: new PublicKey(market.publicKey.toString()),
+          bettor: provider.wallet.publicKey
         })
         .rpc();
       
@@ -258,7 +208,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
       await program.methods
         .resolveMarket(outcomeEnum)
         .accounts({
-          market: new PublicKey(market.id.toString()),
+          market: new PublicKey(market.publicKey.toString()),
           creator: provider.wallet.publicKey
         })
         .rpc();
@@ -290,9 +240,8 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
       await program.methods
         .claimWinnings()
         .accounts({
-          market: new PublicKey(market.id.toString()),
-          claimant: provider.wallet.publicKey,
-          // systemProgram: SystemProgram.programId
+          market: new PublicKey(market.publicKey.toString()),
+          claimant: provider.wallet.publicKey
         })
         .rpc();
       

@@ -1,23 +1,14 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LineChart, Home, Plus, Layout, Wallet } from 'lucide-react';
-import { useWallet } from '@solana/wallet-adapter-react';
-import Button from '../common/Button';
-import { truncateAddress } from '../../utils/format';
-import { useWalletModal } from '@solana/wallet-adapter-react-ui';
+import { Menu, X, LineChart, Home, Plus, Layout } from 'lucide-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 const Header = () => {
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { connected, publicKey } = useWallet();
-  const { setVisible } = useWalletModal();
 
   const toggleMobileMenu = () => {
     setMobileMenuOpen(!mobileMenuOpen);
-  };
-
-  const handleConnectWallet = () => {
-    setVisible(true);
   };
 
   // Navigation items with their paths and icons
@@ -78,21 +69,7 @@ const Header = () => {
 
         {/* Wallet Connection */}
         <div className="flex items-center space-x-2">
-          {connected && publicKey ? (
-            <div className="flex items-center rounded-full bg-primary/10 px-3 py-1.5 text-sm text-primary">
-              <Wallet size={16} className="mr-2" />
-              <span>{truncateAddress(publicKey.toString())}</span>
-            </div>
-          ) : (
-            <Button
-              variant="primary"
-              size="sm"
-              leftIcon={<Wallet size={16} />}
-              onClick={handleConnectWallet}
-            >
-              Connect Wallet
-            </Button>
-          )}
+          <WalletMultiButton />
 
           {/* Mobile menu button */}
           <button

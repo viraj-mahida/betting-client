@@ -9,7 +9,7 @@ const HomePage = () => {
   
   // Get the top markets by liquidity (max 6)
   const topMarkets = [...markets]
-    .sort((a, b) => b.totalLiquidity - a.totalLiquidity)
+    .sort((a, b) => b.totalYesAmount.plus(b.totalNoAmount).minus(a.totalYesAmount.plus(a.totalNoAmount)).toNumber())
     .slice(0, 6);
 
   return (
@@ -29,25 +29,25 @@ const HomePage = () => {
               bets on binary outcomes and earn rewards for your insights.
             </p>
             <div className="flex flex-col space-y-4 sm:flex-row sm:space-x-4 sm:space-y-0 sm:justify-center">
-              <Button
-                as={Link}
-                to="/explore"
-                variant="secondary"
-                size="lg"
-                className="text-base font-semibold bg-secondary hover:bg-secondary-600"
-                rightIcon={<ArrowRight size={16} />}
-              >
-                Explore Markets
-              </Button>
-              <Button
-                as={Link}
-                to="/create"
-                variant="outline"
-                size="lg"
-                className="text-base font-semibold text-white border-white/30 hover:bg-white/10"
-              >
-                Create Market
-              </Button>
+              <Link to="/explore">
+                <Button
+                  variant="secondary"
+                  size="lg"
+                  className="text-base font-semibold bg-secondary hover:bg-secondary-600"
+                  rightIcon={<ArrowRight size={16} />}
+                >
+                  Explore Markets
+                </Button>
+              </Link>
+              <Link to="/create">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="text-base font-semibold text-white border-white/30 hover:bg-white/10"
+                >
+                  Create Market
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
@@ -72,21 +72,21 @@ const HomePage = () => {
           ) : (
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
               {topMarkets.map((market) => (
-                <MarketCard key={market.id} market={market} />
+                <MarketCard key={market.publicKey.toString()} market={market} />
               ))}
             </div>
           )}
 
           <div className="mt-10 text-center">
-            <Button
-              as={Link}
-              to="/explore"
-              variant="outline"
-              size="lg"
-              rightIcon={<ArrowRight size={16} />}
-            >
-              View All Markets
-            </Button>
+            <Link to="/explore">
+              <Button
+                variant="outline"
+                size="lg"
+                rightIcon={<ArrowRight size={16} />}
+              >
+                View All Markets
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
@@ -212,15 +212,15 @@ const HomePage = () => {
             <p className="mb-6 text-lg text-white/80">
               Join BetSolana today and start participating in prediction markets or create your own.
             </p>
-            <Button
-              as={Link}
-              to="/explore"
-              variant="secondary"
-              size="lg"
-              className="text-base font-semibold bg-secondary hover:bg-secondary-600"
+            <Link to="/explore">
+              <Button
+                variant="secondary"
+                size="lg"
+                className="text-base font-semibold bg-secondary hover:bg-secondary-600"
             >
-              Get Started Now
-            </Button>
+                Get Started Now
+              </Button>
+            </Link>
           </div>
         </div>
       </section>

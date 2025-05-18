@@ -1,20 +1,14 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/simple_betting.json`.
- */
-export type SimpleBetting = {
-  "address": "BETTYxvFKRvF9ov3r7rNcW6nFLm5Kmmy3JdXzM1LgB56",
+{
+  "address": "6JRShtnTuvqR6Ntvir7Dv3FXVRZhA34EMWXW4zJRZfzx",
   "metadata": {
-    "name": "simpleBetting",
+    "name": "betting_anchor_2",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "Solana prediction market for betting on binary outcomes"
+    "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "claimWinnings",
+      "name": "claim_winnings",
       "discriminator": [
         161,
         215,
@@ -36,14 +30,14 @@ export type SimpleBetting = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "createMarket",
+      "name": "create_market",
       "discriminator": [
         103,
         226,
@@ -56,32 +50,9 @@ export type SimpleBetting = {
       ],
       "accounts": [
         {
-          "name": "bettingState",
-          "writable": true
-        },
-        {
           "name": "market",
           "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  109,
-                  97,
-                  114,
-                  107,
-                  101,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "betting_state.market_count",
-                "account": "bettingState"
-              }
-            ]
-          }
+          "signer": true
         },
         {
           "name": "creator",
@@ -89,7 +60,7 @@ export type SimpleBetting = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -101,37 +72,7 @@ export type SimpleBetting = {
       ]
     },
     {
-      "name": "initialize",
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
-      "accounts": [
-        {
-          "name": "bettingState",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "authority",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "systemProgram",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "placeBet",
+      "name": "place_bet",
       "discriminator": [
         222,
         62,
@@ -153,7 +94,7 @@ export type SimpleBetting = {
           "signer": true
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -162,7 +103,7 @@ export type SimpleBetting = {
           "name": "choice",
           "type": {
             "defined": {
-              "name": "outcome"
+              "name": "Outcome"
             }
           }
         },
@@ -173,7 +114,7 @@ export type SimpleBetting = {
       ]
     },
     {
-      "name": "resolveMarket",
+      "name": "resolve_market",
       "discriminator": [
         155,
         23,
@@ -199,7 +140,7 @@ export type SimpleBetting = {
           "name": "outcome",
           "type": {
             "defined": {
-              "name": "outcome"
+              "name": "Outcome"
             }
           }
         }
@@ -208,20 +149,7 @@ export type SimpleBetting = {
   ],
   "accounts": [
     {
-      "name": "bettingState",
-      "discriminator": [
-        22,
-        17,
-        246,
-        140,
-        141,
-        110,
-        243,
-        199
-      ]
-    },
-    {
-      "name": "market",
+      "name": "Market",
       "discriminator": [
         219,
         190,
@@ -236,7 +164,7 @@ export type SimpleBetting = {
   ],
   "events": [
     {
-      "name": "betPlacedEvent",
+      "name": "BetPlacedEvent",
       "discriminator": [
         218,
         76,
@@ -249,7 +177,7 @@ export type SimpleBetting = {
       ]
     },
     {
-      "name": "marketCreatedEvent",
+      "name": "MarketCreatedEvent",
       "discriminator": [
         130,
         142,
@@ -262,7 +190,7 @@ export type SimpleBetting = {
       ]
     },
     {
-      "name": "marketResolvedEvent",
+      "name": "MarketResolvedEvent",
       "discriminator": [
         87,
         249,
@@ -275,7 +203,7 @@ export type SimpleBetting = {
       ]
     },
     {
-      "name": "winningsClaimedEvent",
+      "name": "WinningsClaimedEvent",
       "discriminator": [
         30,
         231,
@@ -291,64 +219,64 @@ export type SimpleBetting = {
   "errors": [
     {
       "code": 6000,
-      "name": "marketAlreadyResolved",
+      "name": "MarketAlreadyResolved",
       "msg": "Market is already resolved"
     },
     {
       "code": 6001,
-      "name": "marketNotResolved",
+      "name": "MarketNotResolved",
       "msg": "Market is not yet resolved"
     },
     {
       "code": 6002,
-      "name": "invalidBetAmount",
+      "name": "InvalidBetAmount",
       "msg": "Invalid bet amount"
     },
     {
       "code": 6003,
-      "name": "invalidBetChoice",
+      "name": "InvalidBetChoice",
       "msg": "Invalid bet choice"
     },
     {
       "code": 6004,
-      "name": "invalidOutcome",
+      "name": "InvalidOutcome",
       "msg": "Invalid outcome"
     },
     {
       "code": 6005,
-      "name": "unauthorizedAccess",
+      "name": "UnauthorizedAccess",
       "msg": "Unauthorized access"
     },
     {
       "code": 6006,
-      "name": "notAWinner",
+      "name": "NotAWinner",
       "msg": "Not a winner in this market"
     },
     {
       "code": 6007,
-      "name": "invalidMarketState",
+      "name": "InvalidMarketState",
       "msg": "Invalid market state"
     },
     {
       "code": 6008,
-      "name": "insufficientFunds",
+      "name": "InsufficientFunds",
       "msg": "Insufficient funds"
     },
     {
       "code": 6009,
-      "name": "overflowError",
+      "name": "OverflowError",
       "msg": "Arithmetic overflow"
     }
   ],
   "types": [
     {
-      "name": "betPlacedEvent",
+      "name": "BetPlacedEvent",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "marketId",
-            "type": "u64"
+            "name": "market",
+            "type": "pubkey"
           },
           {
             "name": "bettor",
@@ -358,7 +286,7 @@ export type SimpleBetting = {
             "name": "choice",
             "type": {
               "defined": {
-                "name": "outcome"
+                "name": "Outcome"
               }
             }
           },
@@ -370,23 +298,7 @@ export type SimpleBetting = {
       }
     },
     {
-      "name": "bettingState",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "pubkey"
-          },
-          {
-            "name": "marketCount",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "bettor",
+      "name": "Bettor",
       "type": {
         "kind": "struct",
         "fields": [
@@ -402,14 +314,10 @@ export type SimpleBetting = {
       }
     },
     {
-      "name": "market",
+      "name": "Market",
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "id",
-            "type": "u64"
-          },
           {
             "name": "creator",
             "type": "pubkey"
@@ -426,34 +334,34 @@ export type SimpleBetting = {
             "name": "outcome",
             "type": {
               "defined": {
-                "name": "outcome"
+                "name": "Outcome"
               }
             }
           },
           {
-            "name": "totalYesAmount",
+            "name": "total_yes_amount",
             "type": "u64"
           },
           {
-            "name": "totalNoAmount",
+            "name": "total_no_amount",
             "type": "u64"
           },
           {
-            "name": "yesBettors",
+            "name": "yes_bettors",
             "type": {
               "vec": {
                 "defined": {
-                  "name": "bettor"
+                  "name": "Bettor"
                 }
               }
             }
           },
           {
-            "name": "noBettors",
+            "name": "no_bettors",
             "type": {
               "vec": {
                 "defined": {
-                  "name": "bettor"
+                  "name": "Bettor"
                 }
               }
             }
@@ -462,13 +370,13 @@ export type SimpleBetting = {
       }
     },
     {
-      "name": "marketCreatedEvent",
+      "name": "MarketCreatedEvent",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "marketId",
-            "type": "u64"
+            "name": "market",
+            "type": "pubkey"
           },
           {
             "name": "creator",
@@ -482,19 +390,19 @@ export type SimpleBetting = {
       }
     },
     {
-      "name": "marketResolvedEvent",
+      "name": "MarketResolvedEvent",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "marketId",
-            "type": "u64"
+            "name": "market",
+            "type": "pubkey"
           },
           {
             "name": "outcome",
             "type": {
               "defined": {
-                "name": "outcome"
+                "name": "Outcome"
               }
             }
           }
@@ -502,30 +410,30 @@ export type SimpleBetting = {
       }
     },
     {
-      "name": "outcome",
+      "name": "Outcome",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "undecided"
+            "name": "Undecided"
           },
           {
-            "name": "yes"
+            "name": "Yes"
           },
           {
-            "name": "no"
+            "name": "No"
           }
         ]
       }
     },
     {
-      "name": "winningsClaimedEvent",
+      "name": "WinningsClaimedEvent",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "marketId",
-            "type": "u64"
+            "name": "market",
+            "type": "pubkey"
           },
           {
             "name": "claimant",
@@ -539,4 +447,4 @@ export type SimpleBetting = {
       }
     }
   ]
-};
+}

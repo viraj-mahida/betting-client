@@ -1,14 +1,20 @@
-{
-  "address": "BETTYxvFKRvF9ov3r7rNcW6nFLm5Kmmy3JdXzM1LgB56",
+/**
+ * Program IDL in camelCase format in order to be used in JS/TS.
+ *
+ * Note that this is only a type helper and is not the actual IDL. The original
+ * IDL can be found at `target/idl/betting_anchor_2.json`.
+ */
+export type BettingAnchor2 = {
+  "address": "6JRShtnTuvqR6Ntvir7Dv3FXVRZhA34EMWXW4zJRZfzx",
   "metadata": {
-    "name": "simple_betting",
+    "name": "bettingAnchor2",
     "version": "0.1.0",
     "spec": "0.1.0",
-    "description": "Solana prediction market for betting on binary outcomes"
+    "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "claim_winnings",
+      "name": "claimWinnings",
       "discriminator": [
         161,
         215,
@@ -30,14 +36,14 @@
           "signer": true
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "create_market",
+      "name": "createMarket",
       "discriminator": [
         103,
         226,
@@ -50,32 +56,9 @@
       ],
       "accounts": [
         {
-          "name": "betting_state",
-          "writable": true
-        },
-        {
           "name": "market",
           "writable": true,
-          "pda": {
-            "seeds": [
-              {
-                "kind": "const",
-                "value": [
-                  109,
-                  97,
-                  114,
-                  107,
-                  101,
-                  116
-                ]
-              },
-              {
-                "kind": "account",
-                "path": "betting_state.market_count",
-                "account": "BettingState"
-              }
-            ]
-          }
+          "signer": true
         },
         {
           "name": "creator",
@@ -83,7 +66,7 @@
           "signer": true
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -95,37 +78,7 @@
       ]
     },
     {
-      "name": "initialize",
-      "discriminator": [
-        175,
-        175,
-        109,
-        31,
-        13,
-        152,
-        155,
-        237
-      ],
-      "accounts": [
-        {
-          "name": "betting_state",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "authority",
-          "writable": true,
-          "signer": true
-        },
-        {
-          "name": "system_program",
-          "address": "11111111111111111111111111111111"
-        }
-      ],
-      "args": []
-    },
-    {
-      "name": "place_bet",
+      "name": "placeBet",
       "discriminator": [
         222,
         62,
@@ -147,7 +100,7 @@
           "signer": true
         },
         {
-          "name": "system_program",
+          "name": "systemProgram",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -156,7 +109,7 @@
           "name": "choice",
           "type": {
             "defined": {
-              "name": "Outcome"
+              "name": "outcome"
             }
           }
         },
@@ -167,7 +120,7 @@
       ]
     },
     {
-      "name": "resolve_market",
+      "name": "resolveMarket",
       "discriminator": [
         155,
         23,
@@ -193,7 +146,7 @@
           "name": "outcome",
           "type": {
             "defined": {
-              "name": "Outcome"
+              "name": "outcome"
             }
           }
         }
@@ -202,20 +155,7 @@
   ],
   "accounts": [
     {
-      "name": "BettingState",
-      "discriminator": [
-        22,
-        17,
-        246,
-        140,
-        141,
-        110,
-        243,
-        199
-      ]
-    },
-    {
-      "name": "Market",
+      "name": "market",
       "discriminator": [
         219,
         190,
@@ -230,7 +170,7 @@
   ],
   "events": [
     {
-      "name": "BetPlacedEvent",
+      "name": "betPlacedEvent",
       "discriminator": [
         218,
         76,
@@ -243,7 +183,7 @@
       ]
     },
     {
-      "name": "MarketCreatedEvent",
+      "name": "marketCreatedEvent",
       "discriminator": [
         130,
         142,
@@ -256,7 +196,7 @@
       ]
     },
     {
-      "name": "MarketResolvedEvent",
+      "name": "marketResolvedEvent",
       "discriminator": [
         87,
         249,
@@ -269,7 +209,7 @@
       ]
     },
     {
-      "name": "WinningsClaimedEvent",
+      "name": "winningsClaimedEvent",
       "discriminator": [
         30,
         231,
@@ -285,64 +225,64 @@
   "errors": [
     {
       "code": 6000,
-      "name": "MarketAlreadyResolved",
+      "name": "marketAlreadyResolved",
       "msg": "Market is already resolved"
     },
     {
       "code": 6001,
-      "name": "MarketNotResolved",
+      "name": "marketNotResolved",
       "msg": "Market is not yet resolved"
     },
     {
       "code": 6002,
-      "name": "InvalidBetAmount",
+      "name": "invalidBetAmount",
       "msg": "Invalid bet amount"
     },
     {
       "code": 6003,
-      "name": "InvalidBetChoice",
+      "name": "invalidBetChoice",
       "msg": "Invalid bet choice"
     },
     {
       "code": 6004,
-      "name": "InvalidOutcome",
+      "name": "invalidOutcome",
       "msg": "Invalid outcome"
     },
     {
       "code": 6005,
-      "name": "UnauthorizedAccess",
+      "name": "unauthorizedAccess",
       "msg": "Unauthorized access"
     },
     {
       "code": 6006,
-      "name": "NotAWinner",
+      "name": "notAWinner",
       "msg": "Not a winner in this market"
     },
     {
       "code": 6007,
-      "name": "InvalidMarketState",
+      "name": "invalidMarketState",
       "msg": "Invalid market state"
     },
     {
       "code": 6008,
-      "name": "InsufficientFunds",
+      "name": "insufficientFunds",
       "msg": "Insufficient funds"
     },
     {
       "code": 6009,
-      "name": "OverflowError",
+      "name": "overflowError",
       "msg": "Arithmetic overflow"
     }
   ],
   "types": [
     {
-      "name": "BetPlacedEvent",
+      "name": "betPlacedEvent",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "market_id",
-            "type": "u64"
+            "name": "market",
+            "type": "pubkey"
           },
           {
             "name": "bettor",
@@ -352,7 +292,7 @@
             "name": "choice",
             "type": {
               "defined": {
-                "name": "Outcome"
+                "name": "outcome"
               }
             }
           },
@@ -364,23 +304,7 @@
       }
     },
     {
-      "name": "BettingState",
-      "type": {
-        "kind": "struct",
-        "fields": [
-          {
-            "name": "authority",
-            "type": "pubkey"
-          },
-          {
-            "name": "market_count",
-            "type": "u64"
-          }
-        ]
-      }
-    },
-    {
-      "name": "Bettor",
+      "name": "bettor",
       "type": {
         "kind": "struct",
         "fields": [
@@ -396,14 +320,10 @@
       }
     },
     {
-      "name": "Market",
+      "name": "market",
       "type": {
         "kind": "struct",
         "fields": [
-          {
-            "name": "id",
-            "type": "u64"
-          },
           {
             "name": "creator",
             "type": "pubkey"
@@ -420,34 +340,34 @@
             "name": "outcome",
             "type": {
               "defined": {
-                "name": "Outcome"
+                "name": "outcome"
               }
             }
           },
           {
-            "name": "total_yes_amount",
+            "name": "totalYesAmount",
             "type": "u64"
           },
           {
-            "name": "total_no_amount",
+            "name": "totalNoAmount",
             "type": "u64"
           },
           {
-            "name": "yes_bettors",
+            "name": "yesBettors",
             "type": {
               "vec": {
                 "defined": {
-                  "name": "Bettor"
+                  "name": "bettor"
                 }
               }
             }
           },
           {
-            "name": "no_bettors",
+            "name": "noBettors",
             "type": {
               "vec": {
                 "defined": {
-                  "name": "Bettor"
+                  "name": "bettor"
                 }
               }
             }
@@ -456,13 +376,13 @@
       }
     },
     {
-      "name": "MarketCreatedEvent",
+      "name": "marketCreatedEvent",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "market_id",
-            "type": "u64"
+            "name": "market",
+            "type": "pubkey"
           },
           {
             "name": "creator",
@@ -476,19 +396,19 @@
       }
     },
     {
-      "name": "MarketResolvedEvent",
+      "name": "marketResolvedEvent",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "market_id",
-            "type": "u64"
+            "name": "market",
+            "type": "pubkey"
           },
           {
             "name": "outcome",
             "type": {
               "defined": {
-                "name": "Outcome"
+                "name": "outcome"
               }
             }
           }
@@ -496,30 +416,30 @@
       }
     },
     {
-      "name": "Outcome",
+      "name": "outcome",
       "type": {
         "kind": "enum",
         "variants": [
           {
-            "name": "Undecided"
+            "name": "undecided"
           },
           {
-            "name": "Yes"
+            "name": "yes"
           },
           {
-            "name": "No"
+            "name": "no"
           }
         ]
       }
     },
     {
-      "name": "WinningsClaimedEvent",
+      "name": "winningsClaimedEvent",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "market_id",
-            "type": "u64"
+            "name": "market",
+            "type": "pubkey"
           },
           {
             "name": "claimant",
@@ -533,4 +453,4 @@
       }
     }
   ]
-}
+};

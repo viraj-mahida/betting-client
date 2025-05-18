@@ -1,50 +1,60 @@
+import { PublicKey } from '@solana/web3.js';
+import { BN } from '@coral-xyz/anchor';
+
+export type Outcome = 'Undecided' | 'Yes' | 'No';
+
 export interface Market {
-  id: string;
-  creator: string;
-  title: string;
-  description: string;
-  closingDate: Date;
-  resolutionDeadline: Date;
-  yesPool: number;
-  noPool: number;
-  totalLiquidity: number;
-  status: 'open' | 'closed' | 'resolved';
-  outcome?: 'yes' | 'no';
-  createdAt: Date;
+  creator: PublicKey;
+  question: string;
+  resolved: boolean;
+  outcome: Outcome;
+  totalYesAmount: BN;
+  totalNoAmount: BN;
+  yesBettors: Bettor[];
+  noBettors: Bettor[];
 }
 
-export interface Bet {
-  id: string;
-  marketId: string;
-  user: string;
-  amount: number;
-  outcome: 'yes' | 'no';
-  timestamp: Date;
-  claimed: boolean;
-  payout?: number;
+export interface Bettor {
+  bettor: PublicKey;
+  amount: BN;
+}
+
+export interface BetPlacedEvent {
+  market: PublicKey;
+  bettor: PublicKey;
+  choice: Outcome;
+  amount: BN;
+}
+
+export interface MarketCreatedEvent {
+  market: PublicKey;
+  creator: PublicKey;
+  question: string;
+}
+
+export interface MarketResolvedEvent {
+  market: PublicKey;
+  outcome: Outcome;
+}
+
+export interface WinningsClaimedEvent {
+  market: PublicKey;
+  claimant: PublicKey;
+  amount: BN;
 }
 
 export interface UserPosition {
-  marketId: string;
-  marketTitle: string;
-  bets: Bet[];
-  totalStaked: number;
-  potentialPayout: number;
+  yesBets: BN;
+  noBets: BN;
+  totalStaked: BN;
+  potentialPayout?: BN;
 }
 
 export interface MarketWithUserPosition extends Market {
-  userPosition?: {
-    yesBets: number;
-    noBets: number;
-    totalStaked: number;
-    potentialPayout: number;
-  };
+  publicKey: PublicKey;
+  userPosition?: UserPosition;
 }
 
 export interface CreateMarketParams {
-  title: string;
-  description: string;
-  closingDate: Date;
-  resolutionDeadline: Date;
-  initialLiquidity?: number;
+  question: string;
 }

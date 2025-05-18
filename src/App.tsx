@@ -8,14 +8,22 @@ import CreateMarketPage from './pages/CreateMarketPage';
 import DashboardPage from './pages/DashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useMarketStore } from './stores/marketStore';
+import { useAnchorProvider } from './contexts/WalletContext';
 
 function App() {
   const { fetchMarkets } = useMarketStore();
+  const provider = useAnchorProvider();
 
+  const handleFetchMarkets = async () => {
+    if (provider) {
+      await fetchMarkets(provider);
+    }
+  };
+  
   useEffect(() => {
     // Load initial data when the app starts
-    fetchMarkets();
-  }, [fetchMarkets]);
+    handleFetchMarkets();
+  }, []);
 
   return (
     <Routes>

@@ -1,12 +1,7 @@
 import { AnchorProvider, Program } from "@coral-xyz/anchor";
-import bettingIDL from "../idl/simple_betting.json";
-import { PublicKey } from "@solana/web3.js";
-import { SimpleBetting } from "../types/simple_betting";
+import bettingIDL from "../idl/betting_anchor_2.json";
+import { BettingAnchor2 } from "../types/betting_anchor_2";
 
-export const BETTING_PROGRAM_ID = new PublicKey(
-  "BETTYxvFKRvF9ov3r7rNcW6nFLm5Kmmy3JdXzM1LgB56"
-);
-
-export function getBettingProgram(provider: AnchorProvider): Program<SimpleBetting> {
-  return new Program<SimpleBetting>(bettingIDL, provider);
+export function getBettingProgram(provider: AnchorProvider): Program<BettingAnchor2> {
+  return new Program<BettingAnchor2>(bettingIDL, provider);
 }
