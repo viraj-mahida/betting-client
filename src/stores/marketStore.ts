@@ -1,12 +1,66 @@
 import { create } from 'zustand';
 import { PublicKey } from '@solana/web3.js';
-import { web3, AnchorProvider } from '@coral-xyz/anchor';
+import { web3, AnchorProvider, BN } from '@coral-xyz/anchor';
 import { getBettingProgram } from '../utils/anchor';
 import { 
   MarketWithUserPosition, 
   CreateMarketParams,
-  MarketStore
+  MarketStore,
+  UserPosition
 } from '../utils/types';
+
+// Helper function to calculate user position
+const calculateUserPosition = (
+  userPublicKey: PublicKey,
+  yesBettors: { bettor: PublicKey; amount: BN }[],
+  noBettors: { bettor: PublicKey; amount: BN }[],
+  totalYesAmount: BN,
+  totalNoAmount: BN,
+  resolved: boolean,
+  outcome: 'undecided' | 'yes' | 'no'
+): UserPosition | undefined => {
+  // Find user's bets in both pools
+  const yesBet = yesBettors.find(b => b.bettor.equals(userPublicKey))?.amount || new BN(0);
+  const noBet = noBettors.find(b => b.bettor.equals(userPublicKey))?.amount || new BN(0);
+  
+  // If user has no bets, return undefined
+  if (yesBet.eq(new BN(0)) && noBet.eq(new BN(0))) {
+    return undefined;
+  }
+
+  const totalStaked = yesBet.add(noBet);
+  
+  // Calculate potential payout
+  let potentialPayout: BN | undefined;
+  
+  if (!resolved) {
+    // For open markets, calculate potential payout based on current odds
+    if (yesBet.gt(new BN(0))) {
+      // If user bet YES, potential payout is their share of the NO pool
+      potentialPayout = yesBet.mul(totalNoAmount).div(totalYesAmount).add(yesBet);
+    } else if (noBet.gt(new BN(0))) {
+      // If user bet NO, potential payout is their share of the YES pool
+      potentialPayout = noBet.mul(totalYesAmount).div(totalNoAmount).add(noBet);
+    }
+  } else {
+    // For resolved markets, calculate actual winnings
+    if ((outcome === 'yes' && yesBet.gt(new BN(0))) || 
+        (outcome === 'no' && noBet.gt(new BN(0)))) {
+      const winningBet = outcome === 'yes' ? yesBet : noBet;
+      const winningPool = outcome === 'yes' ? totalYesAmount : totalNoAmount;
+      const losingPool = outcome === 'yes' ? totalNoAmount : totalYesAmount;
+      
+      potentialPayout = winningBet.mul(losingPool).div(winningPool).add(winningBet);
+    }
+  }
+
+  return {
+    yesBets: yesBet,
+    noBets: noBet,
+    totalStaked,
+    potentialPayout
+  };
+};
 
 export const useMarketStore = create<MarketStore>((set, get) => ({
   markets: [],
@@ -17,6 +71,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
     set({ isLoading: true, error: null });
     try {
       const program = getBettingProgram(provider);
+      const userPublicKey = provider.wallet.publicKey;
       
       // Fetch all market accounts
       const allMarkets = await program.account.market.all();
@@ -31,6 +86,17 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
           outcomeValue = 'no';
         }
         
+        // Calculate user position if wallet is connected
+        const userPosition = userPublicKey ? calculateUserPosition(
+          userPublicKey,
+          account.account.yesBettors,
+          account.account.noBettors,
+          account.account.totalYesAmount,
+          account.account.totalNoAmount,
+          account.account.resolved,
+          outcomeValue
+        ) : undefined;
+        
         return {
           publicKey: account.publicKey,
           creator: account.account.creator,
@@ -41,7 +107,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
           totalNoAmount: account.account.totalNoAmount,
           yesBettors: account.account.yesBettors,
           noBettors: account.account.noBettors,
-          // userPosition: undefined
+          userPosition
         };
       });
 

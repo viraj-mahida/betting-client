@@ -76,7 +76,7 @@ const UserPositionCard = ({ market }: UserPositionCardProps) => {
             <span className="font-medium">{formatCurrency(totalStaked)}</span>
           </div>
 
-          {status === 'open' && (
+          {!resolved && (
             <div className="flex justify-between text-sm">
               <span className="text-slate-700 dark:text-slate-300">Potential payout:</span>
               <span className="font-medium text-success-600 dark:text-success-400">
@@ -85,7 +85,7 @@ const UserPositionCard = ({ market }: UserPositionCardProps) => {
             </div>
           )}
 
-          {status === 'resolved' && (
+          {resolved && (
             <div className="flex justify-between text-sm">
               <span className="text-slate-700 dark:text-slate-300">
                 {hasWon ? 'Winnings:' : 'Result:'}
@@ -103,7 +103,7 @@ const UserPositionCard = ({ market }: UserPositionCardProps) => {
           )}
         </div>
 
-        {status === 'resolved' && hasWon && (
+        {resolved && hasWon && (
           <Button
             variant="primary"
             fullWidth
