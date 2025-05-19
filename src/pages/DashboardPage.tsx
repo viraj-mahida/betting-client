@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Wallet, TrendingUp, History, BarChart3 } from 'lucide-react';
+import { Wallet, TrendingUp, BarChart3 } from 'lucide-react';
 import UserMarketsTable from '../components/dashboard/UserMarketsTable';
 import UserBetsCard from '../components/dashboard/UserBetsCard';
 import { useMarketStore } from '../stores/marketStore';
@@ -12,14 +12,16 @@ const DashboardPage = () => {
   const [activeTab, setActiveTab] = useState<'overview' | 'markets' | 'bets' | 'history'>('overview');
 
   // Filter user markets (in a real app, this would use the actual connected wallet address)
-  const userAddress = publicKey || 'DEMO_WALLET_ADDRESS'; // Fallback for demo
-  const userCreatedMarkets = markets.filter(m => m.creator === userAddress);
+  const userAddress = publicKey;
+  const userCreatedMarkets = markets.filter(m => m.creator.toString() === userAddress);
   
   // Filter markets where user has positions
   const marketsWithUserPositions = markets.filter(m => m.userPosition);
   
   // Calculate total stats
-  const totalLiquidity = userCreatedMarkets.reduce((sum, m) => sum + m.totalLiquidity, 0);
+  const totalLiquidity = userCreatedMarkets.reduce((sum, m) => 
+    sum + (Number(m.totalYesAmount) + Number(m.totalNoAmount)), 0);
+
   const totalStaked = marketsWithUserPositions.reduce(
     (sum, m) => sum + (m.userPosition?.totalStaked || 0), 
     0
@@ -27,7 +29,7 @@ const DashboardPage = () => {
   const totalPotentialWinnings = marketsWithUserPositions.reduce(
     (sum, m) => {
       // Only count potentials for open markets
-      if (m.status === 'open') {
+      if (!m.resolved) {
         return sum + (m.userPosition?.potentialPayout || 0);
       }
       return sum;

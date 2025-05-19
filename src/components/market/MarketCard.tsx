@@ -38,7 +38,7 @@ const MarketCard = ({ market }: MarketCardProps) => {
             <div className="flex items-center">
               <div className={cn("mr-2 h-2 w-2 rounded-full", statusColor[status])} />
               <span className="text-xs font-medium uppercase tracking-wider text-slate-500">
-                {status} {outcome && outcome !== 'Undecided' && `• ${outcome}`}
+                {status} {outcome && outcome !== 'undecided' && `• ${outcome}`}
               </span>
             </div>
           </div>

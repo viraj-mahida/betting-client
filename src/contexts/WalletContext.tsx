@@ -12,6 +12,7 @@ import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
+import { Commitment } from '@solana/web3.js';
 
 // Import wallet adapter styles
 import '@solana/wallet-adapter-react-ui/styles.css';
@@ -23,7 +24,13 @@ interface WalletContextProviderProps {
 
 export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children }) => {
   // For demo, we're using devnet. Change to mainnet-beta for production.
-  const endpoint = "http://127.0.0.1:8899";
+  // const endpoint = "http://127.0.0.1:8899";
+  const endpoint = "https://api.devnet.solana.com";
+  
+  const config = {
+    commitment: "confirmed" as Commitment,
+    confirmTransactionInitialTimeout: 60000
+  };
   
   const wallets = useMemo(
     () => [
@@ -34,7 +41,7 @@ export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children
   );
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
+    <ConnectionProvider endpoint={endpoint} config={config}>
       <WalletProvider wallets={wallets} autoConnect>
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
@@ -58,6 +65,9 @@ export function useAnchorProvider(){
   const wallet = useAnchorWallet();
 
   return new AnchorProvider(connection, wallet as AnchorWallet, {
-    commitment: "confirmed"
+    commitment: "confirmed",
+    preflightCommitment: "confirmed",
+    maxRetries: 3,
+    skipPreflight: false
   })
 }

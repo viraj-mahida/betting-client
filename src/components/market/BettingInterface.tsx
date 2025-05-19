@@ -5,6 +5,8 @@ import { MarketWithUserPosition } from '../../utils/types';
 import { formatCurrency } from '../../utils/format';
 import { useMarketStore } from '../../stores/marketStore';
 import { useAnchorProvider, useWalletContext } from '../../contexts/WalletContext';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { BN } from '@coral-xyz/anchor';
 
 interface BettingInterfaceProps {
   market: MarketWithUserPosition;
@@ -12,8 +14,9 @@ interface BettingInterfaceProps {
 }
 
 const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
-  const [selectedOutcome, setSelectedOutcome] = useState<'Yes' | 'No' | null>(null);
-  const [betAmount, setBetAmount] = useState<number>(10);
+  const [selectedOutcome, setSelectedOutcome] = useState<'yes' | 'no' | null>("yes");
+  const [betAmount, setBetAmount] = useState<number>(0.0001);
+  const betLamports = betAmount * LAMPORTS_PER_SOL;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { placeBet } = useMarketStore();
   const { isConnected } = useWalletContext();
@@ -24,7 +27,7 @@ const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
     return null;
   }
 
-  const handleOutcomeSelect = (outcome: 'Yes' | 'No') => {
+  const handleOutcomeSelect = (outcome: 'yes' | 'no') => {
     setSelectedOutcome(outcome);
   };
 
@@ -34,27 +37,33 @@ const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
   };
 
   const calculatePotentialProfit = () => {
-    if (!selectedOutcome || betAmount <= 0) return 0;
+    if (!selectedOutcome || betLamports <= 0) return 0;
     
-    const relevantPool = (selectedOutcome === 'Yes' ? market.totalYesAmount : market.totalNoAmount) + betAmount;
-    const otherPool = selectedOutcome === 'Yes' ? market.totalNoAmount : market.totalYesAmount;
+    // Convert BN values to numbers for calculation, accounting for lamports (1 SOL = 1 billion lamports)
+    const totalYesAmount = market.totalYesAmount;
+    const totalNoAmount = market.totalNoAmount;
     
-    return (betAmount * otherPool) / relevantPool;
+    const relevantPool = (selectedOutcome === 'yes' ? 
+      totalYesAmount : totalNoAmount) + betLamports;
+    const otherPool = selectedOutcome === 'yes' ? 
+      totalNoAmount : totalYesAmount;
+    
+    return (betLamports * otherPool) / relevantPool;
   };
 
   const handlePlaceBet = async () => {
-    if (!selectedOutcome || betAmount <= 0 || !isConnected) return;
+    if (!selectedOutcome || betLamports <= 0 || !isConnected) return;
     
     setIsSubmitting(true);
     try {
       await placeBet(
         provider,
         market.publicKey.toString(), 
-        betAmount, 
+        new BN(betLamports), 
         selectedOutcome
       );
-      setBetAmount(10);
-      setSelectedOutcome(null);
+      setBetAmount(0.0001);
+      // setSelectedOutcome("Yes");
       if (onBetPlaced) onBetPlaced();
     } catch (error) {
       console.error('Failed to place bet:', error);
@@ -73,11 +82,11 @@ const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
       <div className="mb-4 grid grid-cols-2 gap-3">
         <button
           className={`flex items-center justify-center rounded-md border p-3 transition-colors ${
-            selectedOutcome === 'Yes'
+            selectedOutcome === 'yes'
               ? 'border-primary bg-primary-50 text-primary dark:border-primary-600 dark:bg-primary-900/20'
               : 'border-slate-200 hover:border-primary-200 hover:bg-primary-50 dark:border-slate-700 dark:hover:border-primary-900 dark:hover:bg-primary-900/10'
           }`}
-          onClick={() => handleOutcomeSelect('Yes')}
+          onClick={() => handleOutcomeSelect('yes')}
         >
           <Check size={18} className="mr-2" />
           <span className="font-medium">Yes</span>
@@ -85,11 +94,11 @@ const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
 
         <button
           className={`flex items-center justify-center rounded-md border p-3 transition-colors ${
-            selectedOutcome === 'No'
+            selectedOutcome === 'no'
               ? 'border-error-500 bg-error-50 text-error-600 dark:border-error-700 dark:bg-error-900/20'
               : 'border-slate-200 hover:border-error-200 hover:bg-error-50 dark:border-slate-700 dark:hover:border-error-900 dark:hover:bg-error-900/10'
           }`}
-          onClick={() => handleOutcomeSelect('No')}
+          onClick={() => handleOutcomeSelect('no')}
         >
           <X size={18} className="mr-2" />
           <span className="font-medium">No</span>
@@ -139,7 +148,7 @@ const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
           ? 'Connect Wallet to Bet'
           : !selectedOutcome
           ? 'Select an Outcome'
-          : `Place ${formatCurrency(betAmount)} Bet on ${selectedOutcome.toUpperCase()}`}
+          : `Place ${formatCurrency(betAmount * LAMPORTS_PER_SOL)} Bet on ${selectedOutcome.toUpperCase()}`}
       </Button>
     </div>
   );

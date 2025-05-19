@@ -4,7 +4,7 @@ import { formatCurrency } from '../../utils/format';
 import Button from '../common/Button';
 import { useMarketStore } from '../../stores/marketStore';
 import { useState } from 'react';
-
+import { useAnchorProvider } from '../../contexts/WalletContext';
 interface UserPositionCardProps {
   market: MarketWithUserPosition;
 }
@@ -12,17 +12,20 @@ interface UserPositionCardProps {
 const UserPositionCard = ({ market }: UserPositionCardProps) => {
   const [isClaiming, setIsClaiming] = useState(false);
   const { claimWinnings } = useMarketStore();
+  const provider = useAnchorProvider();
 
   // If no user position, don't show anything
   if (!market.userPosition) {
+    console.log('market', market);
+    console.log('No user position');
     return null;
   }
 
-  const { userPosition, status, outcome } = market;
+  const { userPosition, resolved, outcome } = market;
   const { yesBets, noBets, totalStaked, potentialPayout } = userPosition;
 
   // Check if user has won
-  const hasWon = status === 'resolved' && (
+  const hasWon = resolved && (
     (outcome === 'yes' && yesBets > 0) || 
     (outcome === 'no' && noBets > 0)
   );
@@ -30,7 +33,7 @@ const UserPositionCard = ({ market }: UserPositionCardProps) => {
   const handleClaimWinnings = async () => {
     setIsClaiming(true);
     try {
-      await claimWinnings(market.id);
+      await claimWinnings(provider, market.publicKey.toString());
     } catch (error) {
       console.error('Failed to claim winnings:', error);
     } finally {

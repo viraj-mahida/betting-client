@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { ChevronRight, Check, X } from 'lucide-react';
+import { ChevronRight } from 'lucide-react';
 import { MarketWithUserPosition } from '../../utils/types';
-import { formatCurrency, formatDate, oddsToPercentage } from '../../utils/format';
+import { formatCurrency, oddsToPercentage } from '../../utils/format';
 
 interface UserMarketsTableProps {
   markets: MarketWithUserPosition[];
@@ -22,36 +22,33 @@ const UserMarketsTable = ({ markets, emptyMessage = 'No markets found.' }: UserM
             <th className="px-4 py-3">Status</th>
             <th className="px-4 py-3">Yes/No</th>
             <th className="px-4 py-3">Total Liquidity</th>
-            <th className="px-4 py-3">Closing Date</th>
             <th className="px-4 py-3"><span className="sr-only">Actions</span></th>
           </tr>
         </thead>
         <tbody className="divide-y divide-slate-200 dark:divide-slate-700">
           {markets.map((market) => {
-            const { id, title, status, yesPool, noPool, totalLiquidity, closingDate, outcome } = market;
+            const { publicKey, question, resolved, outcome, totalYesAmount, totalNoAmount } = market;
             
             // Calculate odds
-            const yesPercentage = yesPool / totalLiquidity;
-            const noPercentage = noPool / totalLiquidity;
+            const yesPercentage = totalYesAmount / (totalYesAmount + totalNoAmount);
+            const noPercentage = totalNoAmount / (totalYesAmount + totalNoAmount);
 
             return (
-              <tr key={id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+              <tr key={publicKey.toString()} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
                 <td className="max-w-xs px-4 py-3">
-                  <div className="line-clamp-1 font-medium">{title}</div>
+                  <div className="line-clamp-1 font-medium">{question}</div>
                 </td>
                 <td className="px-4 py-3">
                   <div className="inline-flex items-center">
                     <span
                       className={`inline-block h-2 w-2 rounded-full ${
-                        status === 'open'
+                        resolved
                           ? 'bg-success-500'
-                          : status === 'closed'
-                          ? 'bg-warning-500'
                           : 'bg-primary-500'
                       } mr-2`}
                     />
-                    <span className="text-sm capitalize">{status}</span>
-                    {status === 'resolved' && outcome && (
+                    <span className="text-sm capitalize">{resolved ? 'Resolved' : 'Open'}</span>
+                    {resolved && outcome && (
                       <span className="ml-1 text-sm">({outcome.toUpperCase()})</span>
                     )}
                   </div>
@@ -67,11 +64,10 @@ const UserMarketsTable = ({ markets, emptyMessage = 'No markets found.' }: UserM
                     </span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-sm">{formatCurrency(totalLiquidity)}</td>
-                <td className="px-4 py-3 text-sm">{formatDate(closingDate)}</td>
+                <td className="px-4 py-3 text-sm">{formatCurrency(Number(totalYesAmount) + Number(totalNoAmount))}</td>
                 <td className="px-4 py-3 text-right">
                   <Link
-                    to={`/market/${id}`}
+                    to={`/market/${publicKey.toString()}`}
                     className="inline-flex items-center text-sm font-medium text-primary hover:text-primary-600"
                   >
                     View <ChevronRight size={16} className="ml-1" />

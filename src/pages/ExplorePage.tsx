@@ -9,7 +9,6 @@ const ExplorePage = () => {
   const { markets, isLoading } = useMarketStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'closed' | 'resolved'>('all');
-  const [sortOption, setSortOption] = useState<'newest' | 'liquidity' | 'closing'>('newest');
   const [filteredMarkets, setFilteredMarkets] = useState<MarketWithUserPosition[]>([]);
 
   useEffect(() => {
@@ -18,7 +17,7 @@ const ExplorePage = () => {
 
     // Filter by status
     if (statusFilter !== 'all') {
-      result = result.filter(market => market.status === statusFilter);
+      result = result.filter(market => statusFilter === 'open' ? !market.resolved : statusFilter === 'closed' ? market.resolved : true);
     }
 
     // Filter by search query
@@ -26,27 +25,12 @@ const ExplorePage = () => {
       const query = searchQuery.toLowerCase();
       result = result.filter(
         market => 
-          market.title.toLowerCase().includes(query) || 
-          market.description.toLowerCase().includes(query)
+          market.question.toLowerCase().includes(query)
       );
     }
 
-    // Sort markets
-    result.sort((a, b) => {
-      switch (sortOption) {
-        case 'newest':
-          return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-        case 'liquidity':
-          return b.totalLiquidity - a.totalLiquidity;
-        case 'closing':
-          return new Date(a.closingDate).getTime() - new Date(b.closingDate).getTime();
-        default:
-          return 0;
-      }
-    });
-
     setFilteredMarkets(result);
-  }, [markets, searchQuery, statusFilter, sortOption]);
+  }, [markets, searchQuery, statusFilter]);
 
   return (
     <div className="container mx-auto px-4 py-8 animate-fadeIn">
@@ -88,15 +72,6 @@ const ExplorePage = () => {
               </select>
             </div>
 
-            <select
-              className="input"
-              value={sortOption}
-              onChange={(e) => setSortOption(e.target.value as any)}
-            >
-              <option value="newest">Newest First</option>
-              <option value="liquidity">Highest Liquidity</option>
-              <option value="closing">Closing Soon</option>
-            </select>
           </div>
         </div>
       </div>
@@ -111,7 +86,7 @@ const ExplorePage = () => {
       ) : filteredMarkets.length > 0 ? (
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {filteredMarkets.map((market) => (
-            <MarketCard key={market.id} market={market} />
+            <MarketCard key={market.publicKey.toString()} market={market} />
           ))}
         </div>
       ) : (

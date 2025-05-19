@@ -5,13 +5,14 @@ import MarketHeader from '../components/market/MarketHeader';
 import BettingInterface from '../components/market/BettingInterface';
 import MarketStats from '../components/market/MarketStats';
 import UserPositionCard from '../components/market/UserPositionCard';
-import { useWalletContext } from '../contexts/WalletContext';
+import { useAnchorProvider, useWalletContext } from '../contexts/WalletContext';
 
 const MarketPage = () => {
   const { marketPublicKeyString } = useParams<{ marketPublicKeyString: string }>();
   const { getMarketById, resolveMarket } = useMarketStore();
   const { isConnected } = useWalletContext();
   const [isResolving, setIsResolving] = useState(false);
+  const provider = useAnchorProvider();
 
   const marketNotFoundComp =  <div className="container mx-auto px-4 py-8">
   <div className="rounded-lg border border-slate-200 bg-white p-8 text-center dark:border-slate-700 dark:bg-slate-800">
@@ -28,12 +29,10 @@ const MarketPage = () => {
 
   const market = getMarketById(marketPublicKeyString!);
 
-  console.log("market market market,",{market});
-
   const handleResolveMarket = async (outcome: 'yes' | 'no') => {
     setIsResolving(true);
     try {
-      // await resolveMarket(market.id, outcome);
+      await resolveMarket(provider, marketPublicKeyString!, outcome);
     } catch (error) {
       console.error('Failed to resolve market:', error);
     } finally {
@@ -42,8 +41,7 @@ const MarketPage = () => {
   };
 
   const handleBetPlaced = () => {
-    // Refresh market data or do other updates when a bet is placed
-    console.log('Bet placed successfully');
+    //#TODO: Refresh market data or do other updates when a bet is placed
   };
 
   if (!market) {

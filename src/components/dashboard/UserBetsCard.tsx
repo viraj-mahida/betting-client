@@ -1,9 +1,10 @@
 import { ArrowUpRight, Check, X } from 'lucide-react';
 import { MarketWithUserPosition } from '../../utils/types';
-import { formatCurrency, formatDate, truncateAddress } from '../../utils/format';
+import { formatCurrency } from '../../utils/format';
 import Button from '../common/Button';
 import { useMarketStore } from '../../stores/marketStore';
 import { useState } from 'react';
+import { useAnchorProvider } from '../../contexts/WalletContext';
 
 interface UserBetsCardProps {
   markets: MarketWithUserPosition[];
@@ -12,7 +13,7 @@ interface UserBetsCardProps {
 const UserBetsCard = ({ markets }: UserBetsCardProps) => {
   const [claimingMarketId, setClaimingMarketId] = useState<string | null>(null);
   const { claimWinnings } = useMarketStore();
-
+  const provider = useAnchorProvider();
   // Filter to only markets where the user has a position
   const marketsWithPositions = markets.filter(m => m.userPosition);
 
@@ -27,7 +28,7 @@ const UserBetsCard = ({ markets }: UserBetsCardProps) => {
   const handleClaimWinnings = async (marketId: string) => {
     setClaimingMarketId(marketId);
     try {
-      await claimWinnings(marketId);
+      await claimWinnings(provider, marketId);
     } catch (error) {
       console.error('Failed to claim winnings:', error);
     } finally {
@@ -43,10 +44,13 @@ const UserBetsCard = ({ markets }: UserBetsCardProps) => {
 
       <div className="divide-y divide-slate-200 dark:divide-slate-700">
         {marketsWithPositions.map((market) => {
-          const { id, title, status, outcome } = market;
-          const { yesBets, noBets, totalStaked, potentialPayout } = market.userPosition!;
+          const { publicKey, question, resolved, outcome } = market;
+
+          if (!market.userPosition) return <div>You never placed any bets on this market</div>;
+
+          const { yesBets, noBets, totalStaked, potentialPayout } = market.userPosition;
           
-          const hasWon = status === 'resolved' && (
+          const hasWon = resolved && (
             (outcome === 'yes' && yesBets > 0) || 
             (outcome === 'no' && noBets > 0)
           );
@@ -54,12 +58,12 @@ const UserBetsCard = ({ markets }: UserBetsCardProps) => {
           const canClaim = hasWon;
 
           return (
-            <div key={id} className="p-4">
+            <div key={publicKey.toString()} className="p-4">
               <div className="mb-2 flex items-start justify-between">
-                <h4 className="font-medium">{title}</h4>
+                <h4 className="font-medium">{question}</h4>
                 <div className="ml-2 flex-shrink-0">
                   <a
-                    href={`/market/${id}`}
+                    href={`/market/${publicKey.toString()}`}
                     className="inline-flex items-center text-xs font-medium text-primary-600 hover:text-primary-500"
                   >
                     View <ArrowUpRight size={12} className="ml-0.5" />
@@ -70,15 +74,13 @@ const UserBetsCard = ({ markets }: UserBetsCardProps) => {
               <div className="mb-3 text-sm text-slate-500">
                 <span
                   className={`inline-block h-2 w-2 rounded-full ${
-                    status === 'open'
+                    !resolved
                       ? 'bg-success-500'
-                      : status === 'closed'
-                      ? 'bg-warning-500'
                       : 'bg-primary-500'
                   } mr-1`}
                 />
-                <span className="capitalize">{status}</span>
-                {status === 'resolved' && outcome && (
+                <span className="capitalize">{resolved ? 'Resolved' : 'Open'}</span>
+                {resolved && outcome && (
                   <span className="ml-1">({outcome.toUpperCase()})</span>
                 )}
               </div>
@@ -109,7 +111,7 @@ const UserBetsCard = ({ markets }: UserBetsCardProps) => {
                   <span>{formatCurrency(totalStaked)}</span>
                 </div>
 
-                {status === 'resolved' && (
+                {resolved && (
                   <div className="flex items-center justify-between text-sm font-medium">
                     <span>Result:</span>
                     {hasWon ? (
@@ -127,8 +129,8 @@ const UserBetsCard = ({ markets }: UserBetsCardProps) => {
                     variant="primary"
                     size="sm"
                     fullWidth
-                    isLoading={claimingMarketId === id}
-                    onClick={() => handleClaimWinnings(id)}
+                    isLoading={claimingMarketId === publicKey.toString()}
+                    onClick={() => handleClaimWinnings(publicKey.toString())}
                   >
                     Claim Winnings
                   </Button>

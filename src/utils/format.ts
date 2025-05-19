@@ -1,4 +1,5 @@
-import { format, formatDistance } from 'date-fns';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+import { format } from 'date-fns';
 
 // Format a number with commas for thousands
 export const formatNumber = (num: number): string => {
@@ -7,13 +8,16 @@ export const formatNumber = (num: number): string => {
 
 // Format currency (USDC)
 export const formatCurrency = (amount: number): string => {
+  // Convert from lamports to SOL (1 SOL = 1,000,000,000 lamports)
+  const solAmount = amount / LAMPORTS_PER_SOL;
+  
   // Format with 9 decimal places
   const formatted = new Intl.NumberFormat('en-US', {
     style: 'decimal',
     currency: 'SOL',
     minimumFractionDigits: 0,
     maximumFractionDigits: 9,
-  }).format(amount);
+  }).format(solAmount);
   
   // Remove trailing zeros after the decimal point
   return formatted.replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '');
