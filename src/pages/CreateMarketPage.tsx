@@ -57,7 +57,7 @@ const CreateMarketPage = () => {
       });
       
       // The navigate call now redirects to the markets list since we don't have an ID returned
-      navigate('/markets');
+      navigate('/explore');
     } catch (error) {
       console.error('Failed to create market:', error);
       setErrors({ submit: 'Failed to create market. Please try again.' });

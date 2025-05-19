@@ -234,6 +234,17 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
         throw new Error("Market not found");
       }
       
+      // Check if user is a winner before sending transaction
+      const userPubkey = provider.wallet.publicKey.toString();
+      const isWinner = market.resolved && (
+        (market.outcome === 'yes' && market.yesBettors.some(bettor => bettor.bettor.toString() === userPubkey)) ||
+        (market.outcome === 'no' && market.noBettors.some(bettor => bettor.bettor.toString() === userPubkey))
+      );
+      
+      if (!isWinner) {
+        throw new Error("You don't have any winnings to claim in this market");
+      }
+      
       // Send the transaction
       await program.methods
         .claimWinnings()

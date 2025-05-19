@@ -24,8 +24,8 @@ interface WalletContextProviderProps {
 
 export const WalletContextProvider: FC<WalletContextProviderProps> = ({ children }) => {
   // For demo, we're using devnet. Change to mainnet-beta for production.
-  // const endpoint = "http://127.0.0.1:8899";
-  const endpoint = "https://api.devnet.solana.com";
+  const endpoint = "http://127.0.0.1:8899";
+  // const endpoint = "https://api.devnet.solana.com";
   
   const config = {
     commitment: "confirmed" as Commitment,

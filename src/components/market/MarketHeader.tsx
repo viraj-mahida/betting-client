@@ -3,6 +3,7 @@ import { ChevronLeft, Check, X, Clock } from 'lucide-react';
 import { MarketWithUserPosition } from '../../utils/types';
 import { formatCurrency, oddsToPercentage } from '../../utils/format';
 import Button from '../common/Button';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 interface MarketHeaderProps {
   market: MarketWithUserPosition;
@@ -11,13 +12,14 @@ interface MarketHeaderProps {
 
 const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
   const navigate = useNavigate();
+  const { publicKey } = useWallet();
   const { question, outcome, totalYesAmount, totalNoAmount } = market;
 
   // Calculate odds
   const yesPercentage = totalYesAmount / (totalYesAmount + totalNoAmount);
   const noPercentage = totalNoAmount / (totalYesAmount + totalNoAmount);
 
-  const isCreator = true; // This would check if current user is the creator
+  const isCreator = publicKey && market.creator.toString() === publicKey.toString();
 
   const handleResolve = (outcome: 'yes' | 'no') => {
     if (onResolve) onResolve(outcome);
