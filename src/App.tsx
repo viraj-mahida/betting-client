@@ -9,10 +9,12 @@ import DashboardPage from './pages/DashboardPage';
 import NotFoundPage from './pages/NotFoundPage';
 import { useMarketStore } from './stores/marketStore';
 import { useAnchorProvider } from './contexts/WalletContext';
+import { useWallet } from '@solana/wallet-adapter-react';
 
 function App() {
   const { fetchMarkets } = useMarketStore();
   const provider = useAnchorProvider();
+  const {publicKey} = useWallet();
 
   const handleFetchMarkets = async () => {
     if (provider) {
@@ -21,9 +23,8 @@ function App() {
   };
   
   useEffect(() => {
-    // Load initial data when the app starts
     handleFetchMarkets();
-  }, []);
+  }, [publicKey]);
 
   return (
     <Routes>
