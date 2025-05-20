@@ -56,7 +56,7 @@ const DashboardPage = () => {
       case 'overview':
         return (
           <div className="space-y-6">
-            <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               <div className="card p-4">
                 <div className="mb-2 flex items-center text-slate-500">
                   <Wallet size={16} className="mr-2" />
@@ -85,7 +85,7 @@ const DashboardPage = () => {
                 <div className="text-2xl font-bold">{userCreatedMarkets.length}</div>
                 <div className="mt-1 text-xs text-slate-500">Total liquidity: ${isNaN(totalLiquidity) ? '0.00' : totalLiquidity.toFixed(2)}</div>
               </div>
-            </div>
+            </div> */}
 
             <div className="card">
               <div className="border-b border-slate-200 p-4 dark:border-slate-700">
