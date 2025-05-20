@@ -20,11 +20,7 @@ const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
   const yesAmount = Number(totalYesAmount);
   const noAmount = Number(totalNoAmount);
   const totalAmount = yesAmount + noAmount;
-
-  useEffect(() => {
-    console.log({totalYesAmount, totalNoAmount, totalAmount, yesAmount, noAmount});
-  }, [totalYesAmount, totalNoAmount, totalAmount, yesAmount, noAmount]);
-
+  
   // Calculate odds with safety checks
   const yesPercentage = totalAmount > 0 ? (yesAmount * 100 / totalAmount) : 0;
   const noPercentage = totalAmount > 0 ? (noAmount * 100 / totalAmount) : 0;
