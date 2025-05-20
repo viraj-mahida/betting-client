@@ -33,7 +33,7 @@
   }
 
   .card {
-    @apply rounded-lg border border-slate-200 bg-white shadow-sm dark:border-slate-800 dark:bg-slate-950;
+    @apply rounded-lg border border-slate-200 bg-white shadow-sm hover:shadow-md transition-shadow dark:border-slate-800 dark:bg-slate-950;
   }
 
   .input {
@@ -50,7 +50,7 @@
 
 .market-card:hover {
   transform: translateY(-2px);
-  @apply shadow-md;
+  /* @apply shadow-md; */
 }
 
 .odds-bar {

@@ -105,8 +105,7 @@ const HomePage = () => {
               </div>
               <h3 className="mb-2 text-xl font-semibold">Create Markets</h3>
               <p className="text-slate-600 dark:text-slate-400">
-                Anyone can create a prediction market by defining a question with a binary outcome
-                and setting the timeframe.
+                Anyone can create a prediction market by defining a question with a binary outcome.
               </p>
             </div>
 
@@ -116,8 +115,7 @@ const HomePage = () => {
               </div>
               <h3 className="mb-2 text-xl font-semibold">Place Bets</h3>
               <p className="text-slate-600 dark:text-slate-400">
-                Use USDC to place bets on either "Yes" or "No" outcomes. The odds adjust in
-                real-time based on the market's sentiment.
+                Use SOL to place bets on either "Yes" or "No" outcomes.
               </p>
             </div>
 
@@ -127,8 +125,7 @@ const HomePage = () => {
               </div>
               <h3 className="mb-2 text-xl font-semibold">Win Rewards</h3>
               <p className="text-slate-600 dark:text-slate-400">
-                When the market resolves, winners receive their proportional share of the losing
-                side's pool, plus their original bet.
+                When the market resolves, winners receive their proportional share of the losing side's pool, plus their original bet.
               </p>
             </div>
           </div>
@@ -179,8 +176,7 @@ const HomePage = () => {
                   <div>
                     <h3 className="mb-1 font-medium">True Ownership</h3>
                     <p className="text-slate-600 dark:text-slate-400">
-                      Your funds remain in your control until you place a bet, and winnings are
-                      automatically distributed back to your wallet.
+                      Your funds remain in your control until you place a bet, and winners can claim their rewards.
                     </p>
                   </div>
                 </li>

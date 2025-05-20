@@ -36,24 +36,6 @@ const Footer = () => {
               A decentralized prediction market platform built on Solana. Create markets, place
               bets, and win rewards.
             </p>
-            <div className="mt-4 flex space-x-4">
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-500 hover:text-primary dark:text-slate-400"
-              >
-                <Twitter size={20} />
-              </a>
-              <a
-                href="https://github.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-slate-500 hover:text-primary dark:text-slate-400"
-              >
-                <Github size={20} />
-              </a>
-            </div>
           </div>
 
           {/* Navigation */}
@@ -97,87 +79,78 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Resources */}
+          {/* Source Code */}
           <div>
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
-              Resources
+              Source Code
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="#"
+                  href="https://github.com/viraj-mahida/betting-client"
                   className="text-slate-600 transition hover:text-primary dark:text-slate-400"
+                  target="_blank"
                 >
-                  Documentation
+                  Client
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://github.com/viraj-mahida"
                   className="text-slate-600 transition hover:text-primary dark:text-slate-400"
+                  target="_blank"
                 >
-                  FAQ
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-slate-600 transition hover:text-primary dark:text-slate-400"
-                >
-                  Community
-                </a>
-              </li>
-              <li>
-                <a
-                  href="#"
-                  className="text-slate-600 transition hover:text-primary dark:text-slate-400"
-                >
-                  Tutorials
+                  Contract
                 </a>
               </li>
             </ul>
           </div>
 
-          {/* Legal */}
+          {/* Connect */}
           <div>
             <h3 className="mb-4 text-sm font-semibold uppercase tracking-wider text-slate-900 dark:text-white">
-              Legal
+              Connect
             </h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <a
-                  href="#"
+                  href="https://drive.google.com/file/d/14IplBZob4J2vH1ejRZkxUicjmGqR5Bl-/view"
                   className="text-slate-600 transition hover:text-primary dark:text-slate-400"
+                  target="_blank"
                 >
-                  Terms of Service
+                  Resume
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://x.com/virajmahida"
                   className="text-slate-600 transition hover:text-primary dark:text-slate-400"
+                  target="_blank"
                 >
-                  Privacy Policy
+                  X/Twitter
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://github.com/viraj-mahida/betting-contract"
                   className="text-slate-600 transition hover:text-primary dark:text-slate-400"
+                  target="_blank"
                 >
-                  Risk Disclosure
+                  Github
                 </a>
               </li>
               <li>
                 <a
-                  href="#"
+                  href="https://www.linkedin.com/in/viraj-mahida"
                   className="text-slate-600 transition hover:text-primary dark:text-slate-400"
+                  target="_blank"
                 >
-                  Cookie Policy
+                  LinkedIn
                 </a>
               </li>
             </ul>
           </div>
+
         </div>
 
         <div className="mt-8 border-t border-slate-200 pt-8 dark:border-slate-800">
