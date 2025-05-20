@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Wallet, TrendingUp, BarChart3 } from 'lucide-react';
 import UserMarketsTable from '../components/dashboard/UserMarketsTable';
 import UserBetsCard from '../components/dashboard/UserBetsCard';
 import { useMarketStore } from '../stores/marketStore';
@@ -9,7 +8,7 @@ const DashboardPage = () => {
   const { markets } = useMarketStore();
   const { isConnected, publicKey } = useWalletContext();
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'markets' | 'bets' | 'history'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'markets' | 'bets'>('overview');
 
   // Filter user markets (in a real app, this would use the actual connected wallet address)
   const userAddress = publicKey;
@@ -17,26 +16,6 @@ const DashboardPage = () => {
   
   // Filter markets where user has positions
   const marketsWithUserPositions = markets.filter(m => m.userPosition);
-  
-  // Calculate total stats
-  const totalLiquidity = userCreatedMarkets.reduce((sum, m) => 
-    sum + (Number(m.totalYesAmount) + Number(m.totalNoAmount)), 0);
-
-  const totalStaked = Number(marketsWithUserPositions.reduce(
-    (sum, m) => sum + (m.userPosition?.totalStaked || 0), 
-    0
-  ));
-  
-  const totalPotentialWinnings = Number(marketsWithUserPositions.reduce(
-    (sum, m) => {
-      // Only count potentials for open markets
-      if (!m.resolved) {
-        return sum + (m.userPosition?.potentialPayout || 0);
-      }
-      return sum;
-    }, 
-    0
-  ));
 
   if (!isConnected) {
     return (
@@ -55,37 +34,7 @@ const DashboardPage = () => {
     switch (activeTab) {
       case 'overview':
         return (
-          <div className="space-y-6">
-            {/* <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              <div className="card p-4">
-                <div className="mb-2 flex items-center text-slate-500">
-                  <Wallet size={16} className="mr-2" />
-                  <span className="text-sm font-medium">Total Staked</span>
-                </div>
-                <div className="text-2xl font-bold">${isNaN(totalStaked) ? '0.00' : totalStaked.toFixed(2)}</div>
-                <div className="mt-1 text-xs text-slate-500">Across all markets</div>
-              </div>
-
-              <div className="card p-4">
-                <div className="mb-2 flex items-center text-slate-500">
-                  <TrendingUp size={16} className="mr-2" />
-                  <span className="text-sm font-medium">Potential Winnings</span>
-                </div>
-                <div className="text-2xl font-bold text-success-600">
-                  ${isNaN(totalPotentialWinnings) ? '0.00' : totalPotentialWinnings.toFixed(2)}
-                </div>
-                <div className="mt-1 text-xs text-slate-500">If predictions are correct</div>
-              </div>
-
-              <div className="card p-4">
-                <div className="mb-2 flex items-center text-slate-500">
-                  <BarChart3 size={16} className="mr-2" />
-                  <span className="text-sm font-medium">Markets Created</span>
-                </div>
-                <div className="text-2xl font-bold">{userCreatedMarkets.length}</div>
-                <div className="mt-1 text-xs text-slate-500">Total liquidity: ${isNaN(totalLiquidity) ? '0.00' : totalLiquidity.toFixed(2)}</div>
-              </div>
-            </div> */}
+          <div className="space-y-6">        
 
             <div className="card">
               <div className="border-b border-slate-200 p-4 dark:border-slate-700">
@@ -120,13 +69,6 @@ const DashboardPage = () => {
 
       case 'bets':
         return <UserBetsCard markets={marketsWithUserPositions} />;
-
-      case 'history':
-        return (
-          <div className="card p-6 text-center">
-            <p className="text-slate-500">Transaction history will be available soon.</p>
-          </div>
-        );
 
       default:
         return null;
@@ -173,16 +115,6 @@ const DashboardPage = () => {
             onClick={() => setActiveTab('bets')}
           >
             Your Bets
-          </button>
-          <button
-            className={`inline-flex items-center border-b-2 px-4 py-2 text-sm font-medium ${
-              activeTab === 'history'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700 dark:hover:text-slate-300'
-            }`}
-            onClick={() => setActiveTab('history')}
-          >
-            History
           </button>
         </nav>
       </div>
