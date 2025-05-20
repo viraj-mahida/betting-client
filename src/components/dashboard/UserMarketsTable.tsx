@@ -29,9 +29,14 @@ const UserMarketsTable = ({ markets, emptyMessage = 'No markets found.' }: UserM
           {markets.map((market) => {
             const { publicKey, question, resolved, outcome, totalYesAmount, totalNoAmount } = market;
             
-            // Calculate odds
-            const yesPercentage = totalYesAmount / (totalYesAmount + totalNoAmount);
-            const noPercentage = totalNoAmount / (totalYesAmount + totalNoAmount);
+            // Convert to regular numbers first
+            const yesAmount = Number(totalYesAmount);
+            const noAmount = Number(totalNoAmount);
+            const totalAmount = yesAmount + noAmount;
+            
+            // Calculate odds with safety checks
+            const yesPercentage = totalAmount > 0 ? yesAmount / totalAmount : 0;
+            const noPercentage = totalAmount > 0 ? noAmount / totalAmount : 0;
 
             return (
               <tr key={publicKey.toString()} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
@@ -56,15 +61,15 @@ const UserMarketsTable = ({ markets, emptyMessage = 'No markets found.' }: UserM
                 <td className="px-4 py-3">
                   <div className="flex items-center space-x-1 text-sm">
                     <span className="text-success-600 dark:text-success-400">
-                      {oddsToPercentage(yesPercentage)}
+                      {oddsToPercentage(yesPercentage * 100)}
                     </span>
                     <span>/</span>
                     <span className="text-error-600 dark:text-error-400">
-                      {oddsToPercentage(noPercentage)}
+                      {oddsToPercentage(noPercentage * 100)}
                     </span>
                   </div>
                 </td>
-                <td className="px-4 py-3 text-sm">{formatCurrency(Number(totalYesAmount) + Number(totalNoAmount))}</td>
+                <td className="px-4 py-3 text-sm">{formatCurrency(totalAmount)}</td>
                 <td className="px-4 py-3 text-right">
                   <Link
                     to={`/market/${publicKey.toString()}`}

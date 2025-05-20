@@ -5,6 +5,8 @@ import Button from '../common/Button';
 import { useMarketStore } from '../../stores/marketStore';
 import { useState } from 'react';
 import { useAnchorProvider } from '../../contexts/WalletContext';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
+
 interface UserPositionCardProps {
   market: MarketWithUserPosition;
 }
@@ -22,10 +24,16 @@ const UserPositionCard = ({ market }: UserPositionCardProps) => {
   const { userPosition, resolved, outcome } = market;
   const { yesBets, noBets, totalStaked, potentialPayout } = userPosition;
 
+  // Convert to numbers and properly handle lamports conversion
+  const yesBetsAmount = Number(yesBets) / LAMPORTS_PER_SOL;
+  const noBetsAmount = Number(noBets) / LAMPORTS_PER_SOL;
+  const totalStakedAmount = Number(totalStaked) / LAMPORTS_PER_SOL;
+  const potentialPayoutAmount = potentialPayout ? Number(potentialPayout) / LAMPORTS_PER_SOL : 0;
+
   // Check if user has won
   const hasWon = resolved && (
-    (outcome === 'yes' && yesBets > 0) || 
-    (outcome === 'no' && noBets > 0)
+    (outcome === 'yes' && yesBetsAmount > 0) || 
+    (outcome === 'no' && noBetsAmount > 0)
   );
 
   const handleClaimWinnings = async () => {
@@ -47,23 +55,23 @@ const UserPositionCard = ({ market }: UserPositionCardProps) => {
 
       <div className="p-4">
         <div className="mb-4 space-y-2">
-          {yesBets > 0 && (
+          {yesBetsAmount > 0 && (
             <div className="flex items-center justify-between rounded-md bg-primary-50 p-2 dark:bg-primary-900/20">
               <div className="flex items-center">
                 <Check size={16} className="mr-2 text-primary-600 dark:text-primary-400" />
                 <span className="font-medium">YES</span>
               </div>
-              <span>{formatCurrency(yesBets)}</span>
+              <span>{formatCurrency(yesBetsAmount * LAMPORTS_PER_SOL)}</span>
             </div>
           )}
 
-          {noBets > 0 && (
+          {noBetsAmount > 0 && (
             <div className="flex items-center justify-between rounded-md bg-error-50 p-2 dark:bg-error-900/20">
               <div className="flex items-center">
                 <X size={16} className="mr-2 text-error-600 dark:text-error-400" />
                 <span className="font-medium">NO</span>
               </div>
-              <span>{formatCurrency(noBets)}</span>
+              <span>{formatCurrency(noBetsAmount * LAMPORTS_PER_SOL)}</span>
             </div>
           )}
         </div>
@@ -71,14 +79,14 @@ const UserPositionCard = ({ market }: UserPositionCardProps) => {
         <div className="mb-4 space-y-2 rounded-md bg-slate-100 p-3 dark:bg-slate-800">
           <div className="flex justify-between text-sm">
             <span className="text-slate-700 dark:text-slate-300">Total staked:</span>
-            <span className="font-medium">{formatCurrency(totalStaked)}</span>
+            <span className="font-medium">{formatCurrency(totalStakedAmount * LAMPORTS_PER_SOL)}</span>
           </div>
 
           {!resolved && (
             <div className="flex justify-between text-sm">
               <span className="text-slate-700 dark:text-slate-300">Potential payout:</span>
               <span className="font-medium text-success-600 dark:text-success-400">
-                {formatCurrency(potentialPayout)}
+                {formatCurrency(potentialPayoutAmount * LAMPORTS_PER_SOL)}
               </span>
             </div>
           )}
@@ -90,7 +98,7 @@ const UserPositionCard = ({ market }: UserPositionCardProps) => {
               </span>
               {hasWon ? (
                 <span className="font-medium text-success-600 dark:text-success-400">
-                  {formatCurrency(potentialPayout)}
+                  {formatCurrency(potentialPayoutAmount * LAMPORTS_PER_SOL)}
                 </span>
               ) : (
                 <span className="font-medium text-error-600 dark:text-error-400">

@@ -5,6 +5,7 @@ import Button from '../common/Button';
 import { useMarketStore } from '../../stores/marketStore';
 import { useState } from 'react';
 import { useAnchorProvider } from '../../contexts/WalletContext';
+import { LAMPORTS_PER_SOL } from '@solana/web3.js';
 
 interface UserBetsCardProps {
   markets: MarketWithUserPosition[];
@@ -50,9 +51,16 @@ const UserBetsCard = ({ markets }: UserBetsCardProps) => {
 
           const { yesBets, noBets, totalStaked, potentialPayout } = market.userPosition;
           
+          // Convert to numbers and properly divide by LAMPORTS_PER_SOL
+          // Note: BN values from Solana are in lamports, so we need to convert to SOL
+          const yesBetsAmount = Number(yesBets) / LAMPORTS_PER_SOL;
+          const noBetsAmount = Number(noBets) / LAMPORTS_PER_SOL;
+          const totalStakedAmount = Number(totalStaked) / LAMPORTS_PER_SOL;
+          const potentialPayoutAmount = Number(potentialPayout) / LAMPORTS_PER_SOL;
+
           const hasWon = resolved && (
-            (outcome === 'yes' && yesBets > 0) || 
-            (outcome === 'no' && noBets > 0)
+            (outcome === 'yes' && yesBetsAmount > 0) || 
+            (outcome === 'no' && noBetsAmount > 0)
           );
 
           const canClaim = hasWon;
@@ -86,36 +94,36 @@ const UserBetsCard = ({ markets }: UserBetsCardProps) => {
               </div>
 
               <div className="space-y-2">
-                {yesBets > 0 && (
+                {yesBetsAmount > 0 && (
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
                       <Check size={14} className="mr-1 text-success-500" />
                       <span>Yes bet:</span>
                     </div>
-                    <span>{formatCurrency(yesBets)}</span>
+                    <span>{formatCurrency(yesBetsAmount * LAMPORTS_PER_SOL)}</span>
                   </div>
                 )}
 
-                {noBets > 0 && (
+                {noBetsAmount > 0 && (
                   <div className="flex items-center justify-between text-sm">
                     <div className="flex items-center">
                       <X size={14} className="mr-1 text-error-500" />
                       <span>No bet:</span>
                     </div>
-                    <span>{formatCurrency(noBets)}</span>
+                    <span>{formatCurrency(noBetsAmount * LAMPORTS_PER_SOL)}</span>
                   </div>
                 )}
 
                 <div className="flex items-center justify-between text-sm font-medium">
                   <span>Total staked:</span>
-                  <span>{formatCurrency(totalStaked)}</span>
+                  <span>{formatCurrency(totalStakedAmount * LAMPORTS_PER_SOL)}</span>
                 </div>
 
                 {resolved && (
                   <div className="flex items-center justify-between text-sm font-medium">
                     <span>Result:</span>
                     {hasWon ? (
-                      <span className="text-success-600">{formatCurrency(potentialPayout)}</span>
+                      <span className="text-success-600">{formatCurrency(potentialPayoutAmount * LAMPORTS_PER_SOL)}</span>
                     ) : (
                       <span className="text-error-600">No winnings</span>
                     )}
