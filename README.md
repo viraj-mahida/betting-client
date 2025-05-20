@@ -1,3 +1,5 @@
+See the [Anchor Contract](https://github.com/viraj-mahida/betting-contract) for details on the smart contract.
+
 # BetSolana - Solana Prediction Markets Platform
 
 A decentralized prediction market platform built on Solana, enabling users to create and participate in binary outcome markets.
@@ -7,12 +9,6 @@ A decentralized prediction market platform built on Solana, enabling users to cr
 Check out a quick demo of the main functionality:
 
 [![BetSolana Demo](https://raw.githubusercontent.com/viraj-mahida/betting-client/refs/heads/main/public/Screenshot%20from%202025-05-21%2000-53-07.png)](https://www.loom.com/share/ca6539388b9947b3a063d3f81312b45c?sid=261e84fc-3c55-48f8-8f89-a8de97ad9585)
-
-## Project Structure
-
-- `/src` - React frontend application
-- `/anchor` - Solana smart contract using the Anchor framework
-- `/public` - Static assets
 
 ## Features
 
@@ -34,58 +30,15 @@ Check out a quick demo of the main functionality:
 ### Backend/Blockchain
 - Solana Blockchain
 - Anchor Framework
-- SPL Token for handling funds
-
-## Smart Contract
-
-The core smart contract supports:
-
-1. Platform initialization with configurable fees
-2. Market creation with title, description, and date parameters
-3. Betting on market outcomes
-4. Market resolution by creators
-5. Claiming winnings for successful bets
-
-See the [Anchor README](./anchor/README.md) for details on the smart contract.
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js (v16+)
+- Node.js
 - Solana CLI and Anchor CLI
 - Rust
 - Phantom Wallet or other Solana wallet
-
-### Development Setup
-
-```bash
-# Install dependencies for frontend
-npm install
-
-# Run frontend dev server
-npm run dev
-
-# Install dependencies for Anchor program
-cd anchor
-npm install
-
-# Build the Anchor program
-anchor build
-
-# Deploy to localnet
-anchor deploy
-
-# Run tests
-anchor test
-```
-
-## Deployment
-
-The application can be deployed to:
-
-1. Frontend: Any static hosting service (Vercel, Netlify, etc.)
-2. Smart Contract: Solana devnet or mainnet
 
 ## License
 
