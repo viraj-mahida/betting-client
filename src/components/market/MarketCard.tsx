@@ -47,8 +47,8 @@ const MarketCard = ({ market }: MarketCardProps) => {
 
           <div className="mb-4">
             <div className="flex justify-between text-sm">
-              <span>Yes ({oddsToPercentage(yesPercentage)})</span>
-              <span>No ({oddsToPercentage(noPercentage)})</span>
+              <span>Yes ({oddsToPercentage(yesPercentage * 100)})</span>
+              <span>No ({oddsToPercentage(noPercentage * 100)})</span>
             </div>
             <div className="odds-bar mt-1">
               <div
