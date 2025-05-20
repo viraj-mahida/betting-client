@@ -13,9 +13,14 @@ const MarketStats = ({ market }: MarketStatsProps) => {
     totalNoAmount,
   } = market;
 
-  // Calculate odds
-  const yesPercentage = totalYesAmount / (totalYesAmount + totalNoAmount);
-  const noPercentage = totalNoAmount / (totalYesAmount + totalNoAmount);
+  // Convert big numbers to regular numbers
+  const yesAmount = Number(totalYesAmount);
+  const noAmount = Number(totalNoAmount);
+  const totalAmount = yesAmount + noAmount;
+
+  // Calculate odds with safety checks
+  const yesPercentage = totalAmount > 0 ? yesAmount / totalAmount : 0;
+  const noPercentage = totalAmount > 0 ? noAmount / totalAmount : 0;
 
   return (
     <div className="card">
@@ -29,10 +34,10 @@ const MarketStats = ({ market }: MarketStatsProps) => {
             <div className="mb-1 text-xs font-medium uppercase text-slate-500">Yes Pool</div>
             <div className="flex items-center">
               <ChevronUp className="mr-1 text-primary-500" size={18} />
-              <span className="text-lg font-semibold">{formatCurrency(totalYesAmount)}</span>
+              <span className="text-lg font-semibold">{formatCurrency(yesAmount)}</span>
             </div>
             <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              {oddsToPercentage(yesPercentage)} odds
+              {oddsToPercentage(yesPercentage * 100)} odds
             </div>
           </div>
 
@@ -40,10 +45,10 @@ const MarketStats = ({ market }: MarketStatsProps) => {
             <div className="mb-1 text-xs font-medium uppercase text-slate-500">No Pool</div>
             <div className="flex items-center">
               <ChevronDown className="mr-1 text-error-500" size={18} />
-              <span className="text-lg font-semibold">{formatCurrency(totalNoAmount)}</span>
+              <span className="text-lg font-semibold">{formatCurrency(noAmount)}</span>
             </div>
             <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              {oddsToPercentage(noPercentage)} odds
+              {oddsToPercentage(noPercentage * 100)} odds
             </div>
           </div>
 
@@ -51,10 +56,10 @@ const MarketStats = ({ market }: MarketStatsProps) => {
             <div className="mb-1 text-xs font-medium uppercase text-slate-500">Total Liquidity</div>
             <div className="flex items-center">
               <TrendingUp className="mr-1 text-secondary-500" size={18} />
-              <span className="text-lg font-semibold">{formatCurrency(totalYesAmount + totalNoAmount)}</span>
+              <span className="text-lg font-semibold">{formatCurrency(totalAmount)}</span>
             </div>
             <div className="mt-1 text-sm text-slate-600 dark:text-slate-400">
-              {`Outcome: ${outcome?.toUpperCase()}`}
+              {outcome ? `Outcome: ${outcome.toUpperCase()}` : 'Unresolved'}
             </div>
           </div>
         </div>

@@ -39,14 +39,20 @@ const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
   const calculatePotentialProfit = () => {
     if (!selectedOutcome || betLamports <= 0) return 0;
     
-    // Convert BN values to numbers for calculation, accounting for lamports (1 SOL = 1 billion lamports)
-    const totalYesAmount = market.totalYesAmount;
-    const totalNoAmount = market.totalNoAmount;
+    // Convert BN values to numbers for calculation
+    const totalYesAmount = Number(market.totalYesAmount);
+    const totalNoAmount = Number(market.totalNoAmount);
+    
+    // Safety check to avoid NaN results
+    if (isNaN(totalYesAmount) || isNaN(totalNoAmount)) return 0;
     
     const relevantPool = (selectedOutcome === 'yes' ? 
       totalYesAmount : totalNoAmount) + betLamports;
     const otherPool = selectedOutcome === 'yes' ? 
       totalNoAmount : totalYesAmount;
+    
+    // Safety check for division by zero
+    if (relevantPool <= 0) return 0;
     
     return (betLamports * otherPool) / relevantPool;
   };
@@ -73,7 +79,7 @@ const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
   };
 
   const potentialProfit = calculatePotentialProfit();
-  const estimatedReturn = potentialProfit + betAmount;
+  const estimatedReturn = potentialProfit + betLamports;
 
   return (
     <div className="card p-4">
@@ -112,12 +118,12 @@ const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
         <input
           id="betAmount"
           type="number"
-          min="1"
-          step="1"
+          min="0.0001"
+          step="0.0001"
           value={betAmount}
           onChange={handleBetAmountChange}
           className="input w-full"
-          placeholder="Enter amount in USDC"
+          placeholder="Enter amount in SOL"
         />
       </div>
 
@@ -148,7 +154,7 @@ const BettingInterface = ({ market, onBetPlaced }: BettingInterfaceProps) => {
           ? 'Connect Wallet to Bet'
           : !selectedOutcome
           ? 'Select an Outcome'
-          : `Place ${formatCurrency(betAmount * LAMPORTS_PER_SOL)} Bet on ${selectedOutcome.toUpperCase()}`}
+          : `Place ${betAmount} SOL Bet on ${selectedOutcome.toUpperCase()}`}
       </Button>
     </div>
   );

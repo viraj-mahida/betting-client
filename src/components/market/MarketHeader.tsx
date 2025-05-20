@@ -4,6 +4,7 @@ import { MarketWithUserPosition } from '../../utils/types';
 import { formatCurrency, oddsToPercentage } from '../../utils/format';
 import Button from '../common/Button';
 import { useWallet } from '@solana/wallet-adapter-react';
+import { useEffect } from 'react';
 
 interface MarketHeaderProps {
   market: MarketWithUserPosition;
@@ -14,10 +15,19 @@ const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
   const navigate = useNavigate();
   const { publicKey } = useWallet();
   const { question, outcome, totalYesAmount, totalNoAmount } = market;
+  
+  // Convert big numbers to regular numbers
+  const yesAmount = Number(totalYesAmount);
+  const noAmount = Number(totalNoAmount);
+  const totalAmount = yesAmount + noAmount;
 
-  // Calculate odds
-  const yesPercentage = totalYesAmount / (totalYesAmount + totalNoAmount);
-  const noPercentage = totalNoAmount / (totalYesAmount + totalNoAmount);
+  useEffect(() => {
+    console.log({totalYesAmount, totalNoAmount, totalAmount, yesAmount, noAmount});
+  }, [totalYesAmount, totalNoAmount, totalAmount, yesAmount, noAmount]);
+
+  // Calculate odds with safety checks
+  const yesPercentage = totalAmount > 0 ? (yesAmount * 100 / totalAmount) : 0;
+  const noPercentage = totalAmount > 0 ? (noAmount * 100 / totalAmount) : 0;
 
   const isCreator = publicKey && market.creator.toString() === publicKey.toString();
 
@@ -85,10 +95,10 @@ const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
               <div className="mb-1 flex items-center">
                 <Check size={18} className="mr-2 text-success-300" />
                 <span className="font-medium">YES</span>
-                <span className="ml-auto text-sm">{isNaN(yesPercentage) ? '--%' : oddsToPercentage(yesPercentage)}</span>
+                <span className="ml-auto text-sm">{oddsToPercentage(yesPercentage)}</span>
               </div>
               <div className="mt-1 flex items-baseline">
-                <span className="text-2xl font-bold">{formatCurrency(totalYesAmount)}</span>
+                <span className="text-2xl font-bold">{formatCurrency(yesAmount)}</span>
                 <span className="ml-1 text-sm text-white/70">SOL</span>
               </div>
             </div>
@@ -97,10 +107,10 @@ const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
               <div className="mb-1 flex items-center">
                 <X size={18} className="mr-2 text-error-300" />
                 <span className="font-medium">NO</span>
-                <span className="ml-auto text-sm">{isNaN(noPercentage) ? '--%' : oddsToPercentage(noPercentage)}</span>
+                <span className="ml-auto text-sm">{oddsToPercentage(noPercentage)}</span>
               </div>
               <div className="mt-1 flex items-baseline">
-                <span className="text-2xl font-bold">{formatCurrency(totalNoAmount)}</span>
+                <span className="text-2xl font-bold">{formatCurrency(noAmount)}</span>
                 <span className="ml-1 text-sm text-white/70">SOL</span>
               </div>
             </div>
@@ -109,11 +119,11 @@ const MarketHeader = ({ market, onResolve }: MarketHeaderProps) => {
           <div className="flex h-2 w-full">
             <div
               className="bg-success-400 transition-all"
-              style={{ width: `${yesPercentage * 100}%` }}
+              style={{ width: `${yesPercentage}%` }}
             ></div>
             <div
               className="bg-error-400 transition-all"
-              style={{ width: `${noPercentage * 100}%` }}
+              style={{ width: `${noPercentage}%` }}
             ></div>
           </div>
         </div>

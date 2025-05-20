@@ -41,7 +41,7 @@ export const truncateAddress = (address: string, chars = 4): string => {
 
 // Format odds to percentage
 export const oddsToPercentage = (odds: number): string => {
-  return `${(odds * 100).toFixed(1)}%`;
+  return `${(odds).toFixed(1)}%`;
 };
 
 // Calculate potential payout based on bet amount and odds
