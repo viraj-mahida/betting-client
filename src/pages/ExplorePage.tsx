@@ -8,7 +8,7 @@ import { MarketWithUserPosition } from '../utils/types';
 const ExplorePage = () => {
   const { markets, isLoading } = useMarketStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'closed' | 'resolved'>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'open' | 'resolved'>('all');
   const [filteredMarkets, setFilteredMarkets] = useState<MarketWithUserPosition[]>([]);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ const ExplorePage = () => {
 
     // Filter by status
     if (statusFilter !== 'all') {
-      result = result.filter(market => statusFilter === 'open' ? !market.resolved : statusFilter === 'closed' ? market.resolved : true);
+      result = result.filter(market => statusFilter === 'open' ? !market.resolved : statusFilter === 'resolved' ? market.resolved : true);
     }
 
     // Filter by search query
@@ -67,11 +67,9 @@ const ExplorePage = () => {
               >
                 <option value="all">All Status</option>
                 <option value="open">Open</option>
-                <option value="closed">Closed</option>
                 <option value="resolved">Resolved</option>
               </select>
             </div>
-
           </div>
         </div>
       </div>
