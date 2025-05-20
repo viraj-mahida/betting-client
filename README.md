@@ -2,6 +2,12 @@
 
 A decentralized prediction market platform built on Solana, enabling users to create and participate in binary outcome markets.
 
+## Video Demo
+
+Check out a quick demo of the main functionality:
+
+[BetSolana Demo](https://www.loom.com/share/ca6539388b9947b3a063d3f81312b45c?sid=261e84fc-3c55-48f8-8f89-a8de97ad9585)
+
 ## Project Structure
 
 - `/src` - React frontend application
