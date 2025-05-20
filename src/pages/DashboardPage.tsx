@@ -22,11 +22,12 @@ const DashboardPage = () => {
   const totalLiquidity = userCreatedMarkets.reduce((sum, m) => 
     sum + (Number(m.totalYesAmount) + Number(m.totalNoAmount)), 0);
 
-  const totalStaked = marketsWithUserPositions.reduce(
+  const totalStaked = Number(marketsWithUserPositions.reduce(
     (sum, m) => sum + (m.userPosition?.totalStaked || 0), 
     0
-  );
-  const totalPotentialWinnings = marketsWithUserPositions.reduce(
+  ));
+  
+  const totalPotentialWinnings = Number(marketsWithUserPositions.reduce(
     (sum, m) => {
       // Only count potentials for open markets
       if (!m.resolved) {
@@ -35,7 +36,7 @@ const DashboardPage = () => {
       return sum;
     }, 
     0
-  );
+  ));
 
   if (!isConnected) {
     return (
@@ -61,7 +62,7 @@ const DashboardPage = () => {
                   <Wallet size={16} className="mr-2" />
                   <span className="text-sm font-medium">Total Staked</span>
                 </div>
-                <div className="text-2xl font-bold">${totalStaked.toFixed(2)}</div>
+                <div className="text-2xl font-bold">${isNaN(totalStaked) ? '0.00' : totalStaked.toFixed(2)}</div>
                 <div className="mt-1 text-xs text-slate-500">Across all markets</div>
               </div>
 
@@ -71,7 +72,7 @@ const DashboardPage = () => {
                   <span className="text-sm font-medium">Potential Winnings</span>
                 </div>
                 <div className="text-2xl font-bold text-success-600">
-                  ${totalPotentialWinnings.toFixed(2)}
+                  ${isNaN(totalPotentialWinnings) ? '0.00' : totalPotentialWinnings.toFixed(2)}
                 </div>
                 <div className="mt-1 text-xs text-slate-500">If predictions are correct</div>
               </div>
@@ -82,7 +83,7 @@ const DashboardPage = () => {
                   <span className="text-sm font-medium">Markets Created</span>
                 </div>
                 <div className="text-2xl font-bold">{userCreatedMarkets.length}</div>
-                <div className="mt-1 text-xs text-slate-500">Total liquidity: ${totalLiquidity.toFixed(2)}</div>
+                <div className="mt-1 text-xs text-slate-500">Total liquidity: ${isNaN(totalLiquidity) ? '0.00' : totalLiquidity.toFixed(2)}</div>
               </div>
             </div>
 
