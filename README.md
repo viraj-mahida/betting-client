@@ -6,7 +6,7 @@ A decentralized prediction market platform built on Solana, enabling users to cr
 
 Check out a quick demo of the main functionality:
 
-[![BetSolana Demo](https://cdn.loom.com/sessions/thumbnails/ca6539388b9947b3a063d3f81312b45c-with-play.gif)](https://www.loom.com/share/ca6539388b9947b3a063d3f81312b45c?sid=261e84fc-3c55-48f8-8f89-a8de97ad9585)
+[BetSolana Demo](https://www.loom.com/share/ca6539388b9947b3a063d3f81312b45c?sid=261e84fc-3c55-48f8-8f89-a8de97ad9585)
 
 ## Project Structure
 
