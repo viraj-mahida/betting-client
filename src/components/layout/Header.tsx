@@ -69,6 +69,9 @@ const Header = () => {
 
         {/* Wallet Connection */}
         <div className="flex items-center space-x-2">
+          <span className='flex items-center space-x-1 text-sm font-medium transition-colors text-slate-700 dark:text-slate-300'>
+            Devnet:
+          </span>
           <WalletMultiButton />
 
           {/* Mobile menu button */}
