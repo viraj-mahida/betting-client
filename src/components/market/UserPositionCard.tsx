@@ -16,8 +16,6 @@ const UserPositionCard = ({ market }: UserPositionCardProps) => {
 
   // If no user position, don't show anything
   if (!market.userPosition) {
-    console.log('market', market);
-    console.log('No user position');
     return null;
   }
 
