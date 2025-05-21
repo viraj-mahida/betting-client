@@ -249,7 +249,7 @@ export const useMarketStore = create<MarketStore>((set, get) => ({
       await program.methods
         .claimWinnings()
         .accounts({
-          market: new PublicKey(market.publicKey.toString()),
+          market: market.publicKey,
           claimant: provider.wallet.publicKey
         })
         .rpc();
