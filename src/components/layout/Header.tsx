@@ -24,7 +24,7 @@ const Header = () => {
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
-            <div className="mr-2 rounded-full bg-primary/10 p-1">
+            <div className="hidden md:block mr-2 rounded-full bg-primary/10 p-1">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 width="24"
@@ -69,10 +69,14 @@ const Header = () => {
 
         {/* Wallet Connection */}
         <div className="flex items-center space-x-2">
-          <span className='flex items-center space-x-1 text-sm font-medium transition-colors text-slate-700 dark:text-slate-300'>
-            Devnet:
-          </span>
-          <WalletMultiButton />
+
+          <div className="scale-75 md:scale-100 flex gap-1">
+            <span className='flex items-center space-x-1 text-lg md:text-sm font-medium transition-colors text-slate-700 dark:text-slate-300'>
+              Devnet:
+            </span>
+
+            <WalletMultiButton />
+          </div>
 
           {/* Mobile menu button */}
           <button
@@ -86,7 +90,7 @@ const Header = () => {
 
       {/* Mobile Navigation */}
       {mobileMenuOpen && (
-        <div className="fixed inset-0 top-16 z-50 bg-white dark:bg-slate-900 md:hidden">
+        <div className="z-50 bg-white dark:bg-slate-900 md:hidden">
           <nav className="container mx-auto flex flex-col space-y-4 p-4">
             {navItems.map((item) => (
               <Link
